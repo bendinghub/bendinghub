@@ -1,0 +1,26 @@
+name: bendinghub
+version: '1.0'
+main: me.unprankable.bendinghub.Bendinghub
+api-version: '1.21'
+softdepend: [PlaceholderAPI]
+commands:
+  chatcolor:
+    description: set your chat color
+    usage: /chatcolor <color>
+    aliases: [cc]
+  bendinghub:
+    description: Bendinghub administrative command
+    usage: /bendinghub reload
+    aliases: [bh]
+    permission: bendinghub.reload
+permissions:
+  bendinghub.chat.color:
+    description: Allows players to change their chat color
+    default: false
+  bendinghub.command.chatcolor:
+    description: Allows players to use the /chatcolor command
+    default: false
+prefix: Bendinghub
+authors: [ Unprankable ]
+description: plugin for the bendinghub server
+website: Unprankable.bendinghub.net

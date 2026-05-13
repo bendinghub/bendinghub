@@ -1,0 +1,33 @@
+debug: false
+chat:
+  placeholders:
+    "<displayname>": "%player_name%"
+    "<rank>": "%luckperms_prefix%"
+    "<suffix>": "%luckperms_suffix%"
+    "<chatcolor>": "%bendinghub_chatcolor%"
+  channels:
+    global:
+      prefix: '&7[&aGlobal&7]'
+      permission: 'bendinghub.chat.channel.global'
+      format: '<prefix> : <rank> <displayname> <suffix> » <chatcolor><message>'
+      range: 0
+    staff:
+      prefix: '&7[&cStaff&7]'
+      permission: 'bendinghub.chat.channel.staff'
+      format: '<prefix> : <rank> <displayname> <suffix> » <chatcolor><message>'
+      range: 100
+    town:
+      prefix: '&7[&bTown&7]'
+      permission: 'bendinghub.chat.channel.town'
+      format: '<prefix> : <rank> <displayname> <suffix> » <chatcolor><message>'
+      range: 0
+    nation:
+      prefix: '&7[&6Nation&7]'
+      permission: 'bendinghub.chat.channel.nation'
+      format: '<prefix> : <rank> <displayname> <suffix> » <chatcolor><message>'
+      range: 0
+    local:
+      prefix: '&7[&eLocal&7]'
+      permission: 'bendinghub.chat.channel.local'
+      format: '<prefix> : <rank> <displayname> <suffix> » <chatcolor><message>'
+      range: 0
