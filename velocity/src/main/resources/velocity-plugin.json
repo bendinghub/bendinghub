@@ -1,0 +1,10 @@
+{
+  "id": "bendinghub-proxy",
+  "name": "Bendinghub Proxy",
+  "version": "1.0.0",
+  "description": "A small Velocity proxy plugin to translate Bungee Forward plugin messages for Bendinghub backends.",
+  "authors": [ "unprankable" ],
+  "entrypoint": "me.unprankable.bendinghub.velocity.VelocityProxyBridge",
+  "dependencies": []
+}
+

@@ -1,0 +1,46 @@
+Plugin test checklist for Bendinghub
+
+1) Basic startup and install
+   - [yes] Server starts without errors with plugin jar in plugins folder
+   - [yes] Plugin enables (check console startup message and plugin list)
+   - [yes] `config.yml` is created/loaded and contains expected keys
+   - [yes] `plugin.yml` values (name, version, commands, permissions) are correct
+
+2) Configuration handling
+   - [yes] Default config values used when keys are missing
+   - [yes] Changing `config.yml` and using `/reload` applies settings where expected
+
+3) Commands
+   - Channel command(s): `/bendinghub channel` and aliases
+	 - [yes] Opens channel list / switches channels as expected
+	 - [yes] Permission checks: users without permission cannot use restricted commands
+	 - [yes] Tab-complete works (if implemented)
+   - ChatColor command(s): e.g., `/chatcolor`
+     - [yes] Only users with permission can change their chat color
+	 - [yes] Applies selected color to the users messages as expected
+   - Help command: `/help`
+	 - [yes] Shows correct help text and usage for available commands
+   - Reload command: `/reload` or plugin-specific reload
+	 - [yes] Reload re-reads `config.yml` and updates runtime behavior
+	 - [yes] State preservation: check what is preserved vs reset (channels, user settings)
+
+4) Chat features and channel manager
+   - [yes] Message routing: messages go only to the intended channel(s)
+   - [yes] Global and local channels (if present) behave properly
+   - [yes] Color codes are applied correctly and sanitized against illegal codes
+   - [yes] Long messages and messages with special characters do not crash the plugin
+
+5) Cross-server chat bridge
+   - [ ] CrossServerChatBridge sends and receives messages between servers (if applicable)
+   - [ ] Verify formatting and channel mapping across servers
+   - [ ] Network failures: bridge logs errors and retries appropriately
+
+6) Hooks / integrations
+   - Towny and TownyChat hooks
+	 - [yes] With Towny present: chat hooks engage and show Towny-specific prefixes/suffixes
+	 - [yes] Without Towny: plugin does not throw NoClassDefFoundError or fail enable
+   - PlaceholderAPI expansion (BendinghubExpansion)
+	 - [yes] Placeholders provided by plugin resolve correctly in chat and other plugins
+	 - [yes] Unregistered placeholders are left unchanged or show debug message
+
+

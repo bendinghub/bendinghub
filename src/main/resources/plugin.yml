@@ -1,26 +1,137 @@
 name: bendinghub
-version: '1.0'
+version: '1.0.1'
 main: me.unprankable.bendinghub.Bendinghub
 api-version: '1.21'
-softdepend: [PlaceholderAPI]
-commands:
-  chatcolor:
-    description: set your chat color
-    usage: /chatcolor <color>
-    aliases: [cc]
-  bendinghub:
-    description: Bendinghub administrative command
-    usage: /bendinghub reload
-    aliases: [bh]
-    permission: bendinghub.reload
-permissions:
-  bendinghub.chat.color:
-    description: Allows players to change their chat color
-    default: false
-  bendinghub.command.chatcolor:
-    description: Allows players to use the /chatcolor command
-    default: false
+softdepend: [PlaceholderAPI, Towny]
 prefix: Bendinghub
 authors: [ Unprankable ]
 description: plugin for the bendinghub server
 website: Unprankable.bendinghub.net
+
+commands:
+  bendinghub:
+    description: Bendinghub main command
+    usage: /bendinghub <channel|chatcolor|reload|help>
+    aliases: [bh]
+    permission: bendinghub.command
+#    plugin.yml does not have a subcommand structure but i added it here as  a comment for reference
+#    subcommand:
+#      channel:
+#        description: Change your chat channel
+#        usage: /bendinghub channel <channel>
+#        aliases: [ch]
+#        permission: bendinghub.command.channel
+#      chatcolor:
+#        description: Change your chat color
+#        usage: /bendinghub chatcolor <color>
+#        aliases: [cc]
+#        permission: bendinghub.command.chatcolor
+#      reload:
+#        description: Reload the plugin configuration
+#        usage: /bendinghub reload
+#        aliases: [rl]
+#        permission: bendinghub.reload
+#      help:
+#        description: Show help information
+#        usage: /bendinghub help
+#        aliases: [h]
+#        permission: bendinghub.command.help
+
+permissions:
+  # --- GROUP ROLES ---
+  bendinghub.moderator:
+    description: Allows players to use moderator commands
+    default: false
+    children:
+      bendinghub.command.clearchat: true
+      bendinghub.command.mutechat: true
+      bendinghub.command.unmutechat: true
+      bendinghub.chat.channel.staff: true
+
+  bendinghub.admin:
+    description: Allows players to use admin commands
+    default: false
+    children:
+      bendinghub.command.reload: true
+      bendinghub.command.channel.others: true
+      bendinghub.command.chatcolor.others: true
+      bendinghub.moderator: true
+
+  # --- CHAT PARENT & SUB-NODES ---
+  bendinghub.chat:
+    description: Allows players to use chat features
+    default: true
+    children:
+      bendinghub.chat.channel: true
+      bendinghub.chat.color: false
+      bendinghub.chat.format: false
+
+  bendinghub.chat.channel:
+    description: Allows players to use chat channels
+    default: true
+    children:
+      bendinghub.chat.channel.global: true
+      bendinghub.chat.channel.staff: false
+      bendinghub.chat.channel.town: true
+      bendinghub.chat.channel.nation: true
+      bendinghub.chat.channel.local: true
+      bendinghub.chat.channel.nearby: true
+
+  bendinghub.chat.color:
+    description: Allows players to use chat colors
+    default: false
+    children:
+      bendinghub.chat.color.black: true
+      bendinghub.chat.color.dark_blue: true
+      bendinghub.chat.color.dark_green: true
+      bendinghub.chat.color.dark_aqua: true
+      bendinghub.chat.color.dark_red: true
+      bendinghub.chat.color.dark_purple: true
+      bendinghub.chat.color.gold: true
+      bendinghub.chat.color.gray: true
+      bendinghub.chat.color.dark_gray: true
+      bendinghub.chat.color.blue: true
+      bendinghub.chat.color.green: true
+      bendinghub.chat.color.aqua: true
+      bendinghub.chat.color.red: true
+      bendinghub.chat.color.light_purple: true
+      bendinghub.chat.color.yellow: true
+      bendinghub.chat.color.white: true
+      bendinghub.chat.color.rainbow: true
+      bendinghub.chat.color.gradient: true
+      bendinghub.chat.color.hex: true
+
+  bendinghub.chat.format:
+    description: Allows players to use chat formatting
+    default: false
+    children:
+      bendinghub.chat.format.obfuscated: true
+      bendinghub.chat.format.bold: true
+      bendinghub.chat.format.strikethrough: true
+      bendinghub.chat.format.underline: true
+      bendinghub.chat.format.italic: true
+
+  # --- COMMAND PARENT & SUB-NODES ---
+  bendinghub.command:
+    description: Allows players to use the base bendinghub command
+    default: true
+    children:
+      bendinghub.command.channel: true
+      bendinghub.command.chatcolor: true
+      bendinghub.command.help: true
+
+  bendinghub.command.channel:
+    description: Allows players to change their own chat channel
+    default: true
+    children:
+      bendinghub.command.channel.others: false
+
+  bendinghub.command.chatcolor:
+    description: Allows players to change their own chat color
+    default: true
+    children:
+      bendinghub.command.chatcolor.others: false
+
+  bendinghub.command.reload:
+    description: Allows restarting the plugin configuration
+    default: op

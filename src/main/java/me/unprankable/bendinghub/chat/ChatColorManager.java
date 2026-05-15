@@ -11,19 +11,17 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class ChatColorManager {
-    private final Bendinghub plugin;
     private final ConcurrentHashMap<UUID, String> playerChatColors;
     private File playerChatColorsFile;
     private FileConfiguration playerChatColorsConfig;
 
-    public ChatColorManager(final Bendinghub plugin) {
-        this.plugin = plugin;
+    public ChatColorManager() {
         this.playerChatColors = new ConcurrentHashMap<>();
         loadPlayerChatColors();
     }
 
     public void loadPlayerChatColors() {
-        playerChatColorsFile = new File(plugin.getDataFolder(), "playerChatColors.yml");
+        playerChatColorsFile = new File(Bendinghub.plugin.getDataFolder(), "playerChatColors.yml");
         playerChatColors.clear();
 
         if (playerChatColorsFile.exists()) {
@@ -36,12 +34,12 @@ public class ChatColorManager {
                         playerChatColors.put(playerId, colorCode);
                     }
                 } catch (IllegalArgumentException e) {
-                    plugin.getLogger().warning("Invalid UUID in playerChatColors.yml: " + key);
+                    Bendinghub.log.warning("Invalid UUID in playerChatColors.yml: " + key);
                 }
             }
-            plugin.getLogger().info("Loaded " + playerChatColors.size() + " player chat colors.");
+            Bendinghub.log.info("Loaded " + playerChatColors.size() + " player chat colors.");
         } else {
-            plugin.getLogger().info("No existing playerChatColors.yml found. Starting with an empty chat color map.");
+            Bendinghub.log.info("No existing playerChatColors.yml found. Starting with an empty chat color map.");
         }
     }
 
@@ -54,9 +52,9 @@ public class ChatColorManager {
         }
         try {
             playerChatColorsConfig.save(playerChatColorsFile);
-            plugin.getLogger().info("Saved " + playerChatColors.size() + " player chat colors.");
+            Bendinghub.log.info("Saved " + playerChatColors.size() + " player chat colors.");
         } catch (IOException e) {
-            plugin.getLogger().severe("Failed to save playerChatColors.yml: " + e.getMessage());
+            Bendinghub.log.severe("Failed to save playerChatColors.yml: " + e.getMessage());
         }
     }
 

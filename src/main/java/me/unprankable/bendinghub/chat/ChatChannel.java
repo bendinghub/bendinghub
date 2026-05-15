@@ -1,7 +1,11 @@
 package me.unprankable.bendinghub.chat;
 
 import me.unprankable.bendinghub.Bendinghub;
+import me.unprankable.bendinghub.hooks.PlaceholderAPIHook;
 import org.bukkit.entity.Player;
+import org.bukkit.plugin.java.JavaPlugin;
+import me.clip.placeholderapi.PlaceholderAPI;
+import java.util.Optional;
 
 public class ChatChannel {
     private final String id;
@@ -39,26 +43,43 @@ public class ChatChannel {
     }
     public String fillInFormatValues(Player player, String message) {
         String text = this.format.replace("<prefix>", this.getPrefix())
-                .replace("<displayname>", player.getName())
                 .replace("<message>", message);
 
         // Soft PlaceholderAPI support: if PlaceholderAPI is installed, use it to replace placeholders
-        try {
-            if (player.getServer().getPluginManager().isPluginEnabled("PlaceholderAPI")) {
-                // Use reflection so PlaceholderAPI is an optional dependency at compile time
-                Class<?> papiClass = Class.forName("me.clip.placeholderapi.PlaceholderAPI");
-                java.lang.reflect.Method setPlaceholders = papiClass.getMethod("setPlaceholders", org.bukkit.OfflinePlayer.class, String.class);
-                Object result = setPlaceholders.invoke(null, player, text);
-                if (result instanceof String) {
-                    text = (String) result;
-                }
-            }
-        } catch (ClassNotFoundException | NoSuchMethodException | IllegalAccessException | java.lang.reflect.InvocationTargetException ex) {
-            // Log a warning once if something goes wrong applying placeholders
-            Bendinghub.getPlugin(Bendinghub.class).getLogger().fine("PAPI placeholder replacement failed: " + ex.getMessage());
-        }
-
+        text = PlaceholderAPIHook.parsePlaceholders(player, text);
         return text;
+    }
+
+    public boolean canView(Player viewer, Player sender) {
+        if (this.permission != null && !viewer.hasPermission(this.permission)) return false;
+
+        if ((this.radius > 0) && (!viewer.getWorld().equals(sender.getWorld()) || viewer.getLocation().distance(sender.getLocation()) > this.radius)) return false;
+
+        for (JavaPlugin plugin : ChatHook.getHooks().keySet()) {
+            ChatHook hook = ChatHook.getHooks().get(plugin);
+            try {
+                return hook.canView(viewer, sender, this);
+            } catch (Exception e){
+                Bendinghub.log.severe("Error in chat hook from plugin " + plugin.getName() + ".");
+                e.printStackTrace();
+            }
+        }
+        return true;
+    }
+    public boolean canSend(Player sender) {
+        if (this.permission != null && !sender.hasPermission(this.permission)) return false;
+
+        //check hooks
+        for (JavaPlugin plugin : ChatHook.getHooks().keySet()) {
+            ChatHook hook = ChatHook.getHooks().get(plugin);
+            try {
+                return hook.canSend(sender, this);
+            } catch (Exception e){
+                Bendinghub.log.severe("Error in chat hook from plugin " + plugin.getName() + ".");
+                e.printStackTrace();
+            }
+        }
+        return true;
     }
 
 }

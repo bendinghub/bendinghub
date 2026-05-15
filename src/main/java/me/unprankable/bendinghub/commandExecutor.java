@@ -19,11 +19,11 @@ import java.util.List;
 import java.util.Locale;
 
 public class commandExecutor implements CommandExecutor, TabCompleter {
-    private final Bendinghub plugin;
-    private static final java.util.List<String> SUBCOMMANDS = java.util.Arrays.asList("reload", "help", "channel", "ch", "chatcolor");
+    private static final java.util.List<String> SUBCOMMANDS = java.util.Arrays.asList("reload", "help", "channel", "chatcolor");
 
-    public commandExecutor(Bendinghub plugin) {
-        this.plugin = plugin;
+    public commandExecutor() {
+        Bendinghub.plugin.getCommand("bendinghub").setExecutor(this);
+        Bendinghub.plugin.getCommand("bendinghub").setTabCompleter(this);
     }
 
     @Override
@@ -32,29 +32,31 @@ public class commandExecutor implements CommandExecutor, TabCompleter {
             return false;
         }
         if (SUBCOMMANDS.contains(args[0].toLowerCase()) && !sender.hasPermission("bendinghub.command." + args[0].toLowerCase())) {
-            sender.sendMessage(org.bukkit.ChatColor.RED + "No permission");
+            Methods.sendPlayerMessage((Player) sender,org.bukkit.ChatColor.RED + "No permission");
             return true;
         }
         String subcommand = args[0].toLowerCase();
         Player player = (Player) sender;
         if (!player.hasPermission("bendinghub.command." + subcommand)) {
-            sender.sendMessage(org.bukkit.ChatColor.RED + "You do not have permission to perform this command.");
+            Methods.sendPlayerMessage((Player) sender,org.bukkit.ChatColor.RED + "You do not have permission to perform this command.");
             return true;
         }
         switch(subcommand){
-            case "reload" -> Reload.execute(sender, command, label, args);
-            case "ch","channel" -> Channel.execute(sender, command, label, args);
-            case "help" -> Help.execute(sender, command, label, args);
-            case "chatcolor" -> ChatColor.execute(sender, command, label, args);
-            default -> {
+            case "reload", "rl":
+                return Reload.execute(sender, command, label, args);
+            case "ch","channel":
+                return Channel.execute(sender, command, label, args);
+            case "help","?":
+                return Help.execute(sender, command, label, args);
+            case "chatcolor","cc":
+                return ChatColor.execute(sender, command, label, args);
+            default:
                 if (!sender.hasPermission("bendinghub.command.help")) {
-                    sender.sendMessage(org.bukkit.ChatColor.RED + "Unknown command, no permission to see help");
+                    Methods.sendPlayerMessage((Player) sender,org.bukkit.ChatColor.RED + "Unknown command, no permission to see help");
                     return true;
                 }
-                Help.execute(sender, command, label, args);
-            }
+                return Help.execute(sender, command, label, args);
         }
-        return true;
     }
 
     @Override
@@ -66,10 +68,16 @@ public class commandExecutor implements CommandExecutor, TabCompleter {
 
         String subcommand = args[0].toLowerCase();
         if (sender.hasPermission("bendinghub.command." + subcommand)) {
-            if (subcommand.equals("reload")) return Reload.tabComplete(sender, command, alias, args);
-            if (subcommand.equals("help")) return Help.tabComplete(sender, command, alias, args);
-            if (subcommand.equals("channel") || subcommand.equals("ch")) return Channel.tabComplete(sender, command, alias, args);
-            if (subcommand.equals("chatcolor")) return ChatColor.tabComplete(sender, command, alias, args);
+            switch(subcommand) {
+                case "reload", "rl":
+                    return Reload.tabComplete(sender, command, alias, args);
+                case "help", "?":
+                    return Help.tabComplete(sender, command, alias, args);
+                case "channel", "ch":
+                    return Channel.tabComplete(sender, command, alias, args);
+                case "chatcolor", "cc":
+                    return ChatColor.tabComplete(sender, command, alias, args);
+            }
         }
         return Collections.emptyList();
     }

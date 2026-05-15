@@ -12,18 +12,16 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class ChannelManager {
-    private final Bendinghub plugin;
     private final ConcurrentHashMap<UUID, String> playerChannels;
     private final ConcurrentHashMap<String, ChatChannel> registeredChannels;
     private File playerChannelsFile;
     private FileConfiguration playerChannelsConfig;
 
-    public ChannelManager(final Bendinghub plugin) {
-        this.plugin = plugin;
+    public ChannelManager() {
         this.playerChannels = new ConcurrentHashMap<>();
         this.registeredChannels = new ConcurrentHashMap<>();
 
-        ConfigurationSection channelsSection = plugin.configManager.getChannels();
+        ConfigurationSection channelsSection = Bendinghub.configManager.getChannels();
         if (channelsSection != null) {
             for (String channelId : channelsSection.getKeys(false)) {
                 String prefix = channelsSection.getString(channelId + ".prefix", "");
@@ -31,7 +29,7 @@ public class ChannelManager {
                 String format = channelsSection.getString(channelId + ".format", "<prefix><displayname>: <message>");
                 // Apply global placeholders from config.chat.placeholders (e.g. "<rank>" -> "%luckperms_prefix%")
                 try {
-                    FileConfiguration cfg = plugin.configManager.getConfig();
+                    FileConfiguration cfg = Bendinghub.configManager.getConfig();
                     ConfigurationSection placeholders = cfg.getConfigurationSection("chat.placeholders");
                     if (placeholders != null) {
                         for (String phKey : placeholders.getKeys(false)) {
@@ -55,8 +53,8 @@ public class ChannelManager {
     }
 
     public void loadPlayerChannels() {
-        playerChannelsFile = new File(plugin.getDataFolder(), "playerChannels.yml");
-
+        playerChannelsFile = new File(Bendinghub.plugin.getDataFolder(), "playerChannels.yml");
+        playerChannels.clear();
         if (playerChannelsFile.exists()) {
             playerChannelsConfig = YamlConfiguration.loadConfiguration(playerChannelsFile);
 
@@ -69,7 +67,7 @@ public class ChannelManager {
                         playerChannels.put(uuid, channelId);
                     }
                 } catch (IllegalArgumentException e) {
-                    plugin.getLogger().warning("Invalid UUID in playerChannels.yml: " + key);
+                    Bendinghub.log.warning("Invalid UUID in playerChannels.yml: " + key);
                 }
             }
         } else {
@@ -85,7 +83,7 @@ public class ChannelManager {
             }
             playerChannelsConfig.save(playerChannelsFile);
         } catch (IOException exception) {
-            plugin.getLogger().severe("Failed to save playerChannels.yml: " + exception.getMessage());
+            Bendinghub.log.severe("Failed to save playerChannels.yml: " + exception.getMessage());
         }
     }
 
@@ -107,7 +105,7 @@ public class ChannelManager {
     public void reloadChannels() {
         registeredChannels.clear();
 
-        ConfigurationSection channelsSection = plugin.configManager.getChannels();
+        ConfigurationSection channelsSection = Bendinghub.configManager.getChannels();
         if (channelsSection != null) {
             for (String channelId : channelsSection.getKeys(false)) {
                 String prefix = channelsSection.getString(channelId + ".prefix", "");
@@ -117,7 +115,7 @@ public class ChannelManager {
 
                 // Apply placeholders from config.chat.placeholders
                 try {
-                    FileConfiguration cfg = plugin.configManager.getConfig();
+                    FileConfiguration cfg = Bendinghub.configManager.getConfig();
                     ConfigurationSection placeholders = cfg.getConfigurationSection("chat.placeholders");
                     if (placeholders != null) {
                         for (String phKey : placeholders.getKeys(false)) {
@@ -148,5 +146,12 @@ public class ChannelManager {
 
     public Collection<ChatChannel> getChannels() {
         return registeredChannels.values();
+    }
+
+    public ChatChannel getChannelById(String channelId) {
+        if (channelId == null) {
+            return null;
+        }
+        return registeredChannels.get(channelId);
     }
 }

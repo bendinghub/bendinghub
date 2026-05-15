@@ -1,5 +1,12 @@
 debug: false
 chat:
+  proxy:
+    enabled: true
+    server-id: "server-1"
+    forward-subchannel: "bendinghub:chat"
+    forward-channels:
+      - global
+      - staff
   placeholders:
     "<displayname>": "%player_name%"
     "<rank>": "%luckperms_prefix%"
@@ -15,7 +22,7 @@ chat:
       prefix: '&7[&cStaff&7]'
       permission: 'bendinghub.chat.channel.staff'
       format: '<prefix> : <rank> <displayname> <suffix> » <chatcolor><message>'
-      range: 100
+      range: 0
     town:
       prefix: '&7[&bTown&7]'
       permission: 'bendinghub.chat.channel.town'
@@ -31,3 +38,12 @@ chat:
       permission: 'bendinghub.chat.channel.local'
       format: '<prefix> : <rank> <displayname> <suffix> » <chatcolor><message>'
       range: 0
+    nearby:
+      prefix: '&7[&eNearby&7]'
+      permission: 'bendinghub.chat.channel.nearby'
+      format: '<prefix> : <rank> <displayname> <suffix> » <chatcolor><message>'
+      range: 256 #16 chunks
+  chatcolor:
+    blacklist:
+      - "&k"
+      - "<obf>"
