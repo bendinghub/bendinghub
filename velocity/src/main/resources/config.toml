@@ -1,0 +1,28 @@
+# ||  + + + + + + + + + + + + + + + + + + + + + + + + + + + + + +  ||
+# ||   ____                 _ _             _   _       _          ||
+# ||  | __ )  ___ _ __   __| (_)_ __   __ _| | | |_   _| |__       ||
+# ||  |  _ \ / _ \ '_ \ / _` | | '_ \ / _` | |_| | | | | '_ \      ||
+# ||  | |_) |  __/ | | | (_| | | | | | (_| |  _  | |_| | |_) |     ||
+# ||  |____/ \___|_| |_|\__,_|_|_| |_|\__, |_| |_|\__,_|_.__/      ||
+# ||                                  |___/                        ||
+# ||  + + + + + + + + + + + + + + + + + + + + + + + + + + + + + +  ||
+
+# === BendingHub Proxy Configuration ===
+
+# Cross-Server Private Messages
+[private-messages]
+    # Message format for me -> player
+    message-format-sending = "<gold>[<red>me</red> -> <red>%player%</red>] </gold>%message%"
+    # Message format for player -> me
+    message-format-receiving = "<gold>[<red>%player%</red> -> <red>me</red>] </gold>%message%"
+
+    # Whether to let the backend servers handle message commands for messaging between 2 players on the same server
+    forward-same-server-message-commands = true
+    # Whether to let the backend servers handle messaging invalid targets
+    forward-invalid-targets = true
+    # Invalid target error message if the above is false
+    invalid-target-error = "<red>Invalid target!"
+    # Whether to process legacy formatting in private messages
+    legacy-format = true
+    # Whether to process MiniMessage format in private messages
+    minimessage-format = false
