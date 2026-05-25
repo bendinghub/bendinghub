@@ -52,7 +52,7 @@ public class ChatColor {
     public static List<String> hasColors(String input){//if list is empty then it has no colors
         List<String> colorList = new ArrayList<>();
         for(String color : colors.keySet()){
-            if(input.toLowerCase().matches(".*" + colors.get(color).toLowerCase() + ".*") || input.toLowerCase().contains(color.toLowerCase())){
+            if(input.toLowerCase().matches(".*" + colors.get(color).toLowerCase() + ".*") || input.toLowerCase().contains(colors.get(color).toLowerCase())){
                 colorList.add(color);
             }
         }
@@ -62,7 +62,7 @@ public class ChatColor {
     public static List<String> hasFormats(String input){//if list is empty then it has no formats
         List<String> formatList = new ArrayList<>();
         for(String format : formats.keySet()){
-            if(input.toLowerCase().matches(".*" + formats.get(format).toLowerCase() + ".*") || input.toLowerCase().contains(format.toLowerCase())){
+            if(input.toLowerCase().matches(".*" + formats.get(format).toLowerCase() + ".*") || input.toLowerCase().contains(formats.get(format).toLowerCase())){
                 formatList.add(format);
             }
         }

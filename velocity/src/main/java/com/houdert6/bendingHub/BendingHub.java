@@ -1,5 +1,7 @@
 package com.houdert6.bendingHub;
 
+import com.google.common.io.ByteArrayDataInput;
+import com.google.common.io.ByteStreams;
 import com.google.inject.Inject;
 import com.moandjiezana.toml.Toml;
 import com.mojang.brigadier.Command;
@@ -20,6 +22,7 @@ import com.velocitypowered.api.plugin.annotation.DataDirectory;
 import com.velocitypowered.api.proxy.Player;
 import com.velocitypowered.api.proxy.ProxyServer;
 import com.velocitypowered.api.proxy.ServerConnection;
+import me.unprankable.bendinghub.chat.ChatManager;
 import com.velocitypowered.api.proxy.messages.MinecraftChannelIdentifier;
 import com.velocitypowered.api.proxy.server.RegisteredServer;
 import com.velocitypowered.api.scheduler.ScheduledTask;
@@ -31,6 +34,7 @@ import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.slf4j.Logger;
 
 import java.nio.file.Path;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -41,6 +45,7 @@ public class BendingHub {
     private final ProxyServer proxy;
     private static final MinecraftChannelIdentifier MINIGAME_INFO = MinecraftChannelIdentifier.create("bendinghub", "minigameinfo");
     private static final MinecraftChannelIdentifier MINIGAME_SEND = MinecraftChannelIdentifier.create("bendinghub", "minigamesend");
+    private static final MinecraftChannelIdentifier BENDINGHUB_CHAT = MinecraftChannelIdentifier.create("bendinghub", "chat");
     private final Map<Player, byte[]> minigameInfoMap = new HashMap<>();
 
     @Inject
@@ -117,6 +122,8 @@ public class BendingHub {
 
         proxy.getChannelRegistrar().register(MINIGAME_INFO);
         proxy.getChannelRegistrar().register(MINIGAME_SEND);
+        // Register the bendinghub chat channel so the proxy can receive backend chat plugin messages
+        proxy.getChannelRegistrar().register(BENDINGHUB_CHAT);
 
         logger.info("Registered!");
     }
@@ -172,39 +179,15 @@ public class BendingHub {
         }
     }
 
-    /**
-     * From <a href="https://github.com/bendinghub/bendinghub/blob/main/src/main/java/me/unprankable/bendinghub/chat/ChatManager.java">https://github.com/bendinghub/bendinghub/blob/main/src/main/java/me/unprankable/bendinghub/chat/ChatManager.java</a> lol
-     */
-    private static String convertLegacyToMiniMessage(String text) {
-        if (text == null) return "";
-        //Convert hex codes in the format &#RRGGBB or &x&R&R&G&B&B to <#RRGGBB>
-        text = text.replaceAll("(?i)(&|§)x(&|§)([A-Fa-f0-9])(&|§)([A-Fa-f0-9])(&|§)([A-Fa-f0-9])(&|§)([A-Fa-f0-9])(&|§)([A-Fa-f0-9])(&|§)([A-Fa-f0-9])", "<#$3$5$7$9$11$13>");
-        text = text.replaceAll("(?i)(&|§)(#([A-Fa-f0-9]{6}))", "<$2>");
-        // 2. Standard Color Codes
-        text = text.replaceAll("(?i)(&|§)0", "<black>");
-        text = text.replaceAll("(?i)(&|§)1", "<dark_blue>");
-        text = text.replaceAll("(?i)(&|§)2", "<dark_green>");
-        text = text.replaceAll("(?i)(&|§)3", "<dark_aqua>");
-        text = text.replaceAll("(?i)(&|§)4", "<dark_red>");
-        text = text.replaceAll("(?i)(&|§)5", "<dark_purple>");
-        text = text.replaceAll("(?i)(&|§)6", "<gold>");
-        text = text.replaceAll("(?i)(&|§)7", "<gray>");
-        text = text.replaceAll("(?i)(&|§)8", "<dark_gray>");
-        text = text.replaceAll("(?i)(&|§)9", "<blue>");
-        text = text.replaceAll("(?i)(&|§)a", "<green>");
-        text = text.replaceAll("(?i)(&|§)b", "<aqua>");
-        text = text.replaceAll("(?i)(&|§)c", "<red>");
-        text = text.replaceAll("(?i)(&|§)d", "<light_purple>");
-        text = text.replaceAll("(?i)(&|§)e", "<yellow>");
-        text = text.replaceAll("(?i)(&|§)f", "<white>");
-        // 3. Formatting & Styles
-        text = text.replaceAll("(?i)(&|§)l", "<bold>");
-        text = text.replaceAll("(?i)(&|§)m", "<strikethrough>");
-        text = text.replaceAll("(?i)(&|§)n", "<underline>");
-        text = text.replaceAll("(?i)(&|§)o", "<italic>");
-        text = text.replaceAll("(?i)(&|§)k", "<obf>");
-        text = text.replaceAll("(?i)(&|§)r", "<reset>");
-        return text;
+    @Subscribe
+    public void onChatPluginMessageFromBackend(PluginMessageEvent event){
+        if(!BENDINGHUB_CHAT.equals(event.getIdentifier())) return;
+        event.setResult(PluginMessageEvent.ForwardResult.handled());
+        Collection<RegisteredServer> servers = proxy.getAllServers();
+        for(RegisteredServer server : servers){
+            server.sendPluginMessage(BENDINGHUB_CHAT, event.getData());
+        }
+
     }
 
     private void dm(CommandSource from, Player player, String msg) {
@@ -216,7 +199,7 @@ public class BendingHub {
         String receivingFormat = msgsConfig.getString("message-format-receiving").replace("%player%", from instanceof Player p ? p.getUsername() : "Console (proxy)");
         Component receivingMsg;
         if (doLegacy && doMiniMsg) {
-            receivingMsg = MiniMessage.miniMessage().deserialize(receivingFormat.replace("%message%", convertLegacyToMiniMessage(msg)));
+            receivingMsg = MiniMessage.miniMessage().deserialize(receivingFormat.replace("%message%", ChatManager.convertLegacyToMiniMessage(msg)));
         } else if (doLegacy) {
             receivingMsg = MiniMessage.miniMessage().deserialize(receivingFormat.replace("%message%", "<bhpm-legacymsg>"), Placeholder.component("bhpm-legacymsg", LegacyComponentSerializer.legacyAmpersand().deserialize(msg)));
         } else if (doMiniMsg) {
@@ -230,7 +213,7 @@ public class BendingHub {
         String sendingFormat = msgsConfig.getString("message-format-sending").replace("%player%", player.getUsername());
         Component sendingMsg;
         if (doLegacy && doMiniMsg) {
-            sendingMsg = MiniMessage.miniMessage().deserialize(sendingFormat.replace("%message%", convertLegacyToMiniMessage(msg)));
+            sendingMsg = MiniMessage.miniMessage().deserialize(sendingFormat.replace("%message%", ChatManager.convertLegacyToMiniMessage(msg)));
         } else if (doLegacy) {
             sendingMsg = MiniMessage.miniMessage().deserialize(sendingFormat.replace("%message%", "<bhpm-legacymsg>"), Placeholder.component("bhpm-legacymsg", LegacyComponentSerializer.legacyAmpersand().deserialize(msg)));
         } else if (doMiniMsg) {

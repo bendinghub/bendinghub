@@ -1,0 +1,9 @@
+{
+  "id": "bendinghub",
+  "name": "BendingHub",
+  "version": "1.0.1",
+  "description": "BendingHub velocity proxy plugin",
+  "authors": ["houdert6"],
+  "main": "com.houdert6.bendingHub.BendingHub"
+}
+

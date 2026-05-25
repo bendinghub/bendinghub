@@ -5,6 +5,8 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
+import java.util.List;
+
 public class Help {
     public static boolean execute(CommandSender sender, Command command, String label, String[] args) {
         if (args.length == 1) {
@@ -45,7 +47,7 @@ public class Help {
         return true;
     }
 
-    public static java.util.List<String> tabComplete(CommandSender sender, Command command, String label, String[] args) {
+    public static List<String> tabComplete(CommandSender sender, Command command, String label, String[] args) {
         return java.util.Arrays.asList("channel", "chatcolor", "reload","help");
     }
 }

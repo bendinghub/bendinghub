@@ -4,6 +4,7 @@ import me.unprankable.bendinghub.command.Reload;
 import me.unprankable.bendinghub.command.Help;
 import me.unprankable.bendinghub.command.Channel;
 import me.unprankable.bendinghub.command.ChatColor;
+import me.unprankable.bendinghub.command.namemc;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -19,7 +20,7 @@ import java.util.List;
 import java.util.Locale;
 
 public class commandExecutor implements CommandExecutor, TabCompleter {
-    private static final java.util.List<String> SUBCOMMANDS = java.util.Arrays.asList("reload", "help", "channel", "chatcolor");
+    private static final java.util.List<String> SUBCOMMANDS = java.util.Arrays.asList("reload", "help", "channel", "chatcolor", "namemc");
 
     public commandExecutor() {
         Bendinghub.plugin.getCommand("bendinghub").setExecutor(this);
@@ -50,6 +51,8 @@ public class commandExecutor implements CommandExecutor, TabCompleter {
                 return Help.execute(sender, command, label, args);
             case "chatcolor","cc":
                 return ChatColor.execute(sender, command, label, args);
+            case "namemc","nm":
+                return namemc.execute(sender, command, label, args);
             default:
                 if (!sender.hasPermission("bendinghub.command.help")) {
                     Methods.sendPlayerMessage((Player) sender,org.bukkit.ChatColor.RED + "Unknown command, no permission to see help");
@@ -77,6 +80,8 @@ public class commandExecutor implements CommandExecutor, TabCompleter {
                     return Channel.tabComplete(sender, command, alias, args);
                 case "chatcolor", "cc":
                     return ChatColor.tabComplete(sender, command, alias, args);
+                case "namemc", "nm":
+                    return namemc.tabComplete(sender, command, alias, args);
             }
         }
         return Collections.emptyList();

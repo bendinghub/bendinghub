@@ -14,6 +14,7 @@ public final class Bendinghub extends JavaPlugin {
     public static ConfigManager configManager;
     public static ChatManager chatManager;
     public static commandExecutor commandExecutor;
+    public static boolean luckpermsEnabled;
 
     @Override
     public void onEnable() {
@@ -31,14 +32,13 @@ public final class Bendinghub extends JavaPlugin {
         }
         // Register admin commands
         commandExecutor = new commandExecutor();
+        luckpermsEnabled = Bukkit.getPluginManager().isPluginEnabled("LuckPerms");
         Bendinghub.log.info("Enabling Bendinghub...");
     }
 
     @Override
     public void onDisable() {
-        if (chatManager != null) {
-            chatManager.shutdown();
-        }
+
     }
     public static void reloadPlugin() {
         if (configManager != null) {

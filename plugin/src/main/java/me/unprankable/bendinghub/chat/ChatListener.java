@@ -1,5 +1,6 @@
 package me.unprankable.bendinghub.chat;
 
+import io.papermc.paper.chat.ChatRenderer;
 import io.papermc.paper.event.player.AsyncChatEvent;
 import me.unprankable.bendinghub.Bendinghub;
 import net.kyori.adventure.text.Component;
@@ -48,7 +49,10 @@ public class ChatListener implements Listener {
         String plainText = PlainTextComponentSerializer.plainText().serialize(event.message());
         String formatted = activeChannel.fillInFormatValues(player, plainText);
         String resolved = Bendinghub.chatManager.convertLegacyToMiniMessage(formatted);
-
+        //create message data object
+        //send message data object to proxy
+        //MessageDataObject messageDataObject = new MessageDataObject(activeChannel, resolved, player, Bendinghub.configManager.getConfig().getString("chat.proxy.server-id"));
+        //messageDataObject.sendObject();
         // Filter viewers based on permissions and distance
         event.viewers().removeIf(viewer -> {
             if (!(viewer instanceof Player recipient)) return false; // Keep console
@@ -57,10 +61,8 @@ public class ChatListener implements Listener {
         });
 
         // Format and render the message
-        event.renderer((source, sourceDisplayName, message, viewer) -> mm.deserialize(resolved));
+        event.renderer(ChatRenderer.viewerUnaware((source, sourceDisplayName, message) -> mm.deserialize(resolved)));
+//        event.renderer((source, sourceDisplayName, message, viewer) -> mm.deserialize(resolved));
 
-        if (Bendinghub.chatManager.getCrossServerChatBridge().shouldForwardChannel(activeChannel.getId())) {
-            Bendinghub.chatManager.getCrossServerChatBridge().forward(player, activeChannel.getId(), resolved);
-        }
     }
 }

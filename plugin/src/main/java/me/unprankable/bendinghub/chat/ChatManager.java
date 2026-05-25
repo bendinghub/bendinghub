@@ -6,13 +6,11 @@ import org.bukkit.Bukkit;
 public class ChatManager {
     private final ChannelManager channelManager;
     private final ChatColorManager chatColorManager;
-    private final CrossServerChatBridge crossServerChatBridge;
     private final ChatListener chatListener;
 
     public ChatManager() {
         this.channelManager = new ChannelManager();
         this.chatColorManager = new ChatColorManager();
-        this.crossServerChatBridge = new CrossServerChatBridge();
         this.chatListener = new ChatListener();
         
         // Register the chat listener
@@ -32,17 +30,11 @@ public class ChatManager {
         return chatListener;
     }
 
-    public CrossServerChatBridge getCrossServerChatBridge() {
-        return crossServerChatBridge;
-    }
-    
+
     public ChatManager getInstance() {
         return this;
     }
 
-    public void shutdown() {
-        crossServerChatBridge.shutdown();
-    }
 
     public static String convertLegacyToMiniMessage(String text) {
         if (text == null) return "";
