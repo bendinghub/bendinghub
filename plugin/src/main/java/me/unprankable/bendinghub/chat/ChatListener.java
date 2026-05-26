@@ -18,6 +18,10 @@ public class ChatListener implements Listener {
     }
     @EventHandler
     public void onChat(AsyncChatEvent event) {
+        // If chat is disabled or the ChatManager hasn't been initialized, do nothing and let vanilla chat run.
+        if (Bendinghub.chatManager == null || Bendinghub.configManager == null || !Bendinghub.configManager.isChatEnabled()) {
+            return;
+        }
         Player player = event.getPlayer();
         ChatChannel channel = Bendinghub.chatManager.getChannelManager().getPlayerChannel(player.getUniqueId());
 

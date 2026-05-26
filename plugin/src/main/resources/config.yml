@@ -8,6 +8,7 @@
 # ||  + + + + + + + + + + + + + + + + + + + + + + + + + + + + + +  ||
 debug: false
 chat:
+  enabled: true
   proxy:
     enabled: true
     server-id: "server-1"

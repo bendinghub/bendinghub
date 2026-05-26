@@ -2,7 +2,7 @@ name: bendinghub
 version: '1.0.1'
 main: me.unprankable.bendinghub.Bendinghub
 api-version: '1.21'
-softdepend: [PlaceholderAPI, Towny, LuckPerms]
+softdepend: [PlaceholderAPI, Towny, LuckPerms, DiscordSRV]
 prefix: Bendinghub
 authors: [ Unprankable ]
 description: plugin for the bendinghub server

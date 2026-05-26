@@ -28,11 +28,13 @@ public class Reload{
                     Methods.sendPlayerMessage((Player) sender,"Bendinghub configuration reloaded.");
                     break;
                 case "channels", "ch", "channel", "chan":
+                    if (!Bendinghub.configManager.isChatEnabled()) break;
                     Bendinghub.log.info("Reloading player chat channels...");
                     Bendinghub.chatManager.getChannelManager().loadPlayerChannels();
                     Methods.sendPlayerMessage((Player) sender,"Chat channels reloaded.");
                     break;
                 case "chatcolors", "cc", "color", "colors":
+                    if (!Bendinghub.configManager.isChatEnabled()) break;
                     Bendinghub.log.info("Reloading player chat colors...");
                     Bendinghub.chatManager.getChatColorManager().loadPlayerChatColors();
                     Methods.sendPlayerMessage((Player) sender,"Player chat colors reloaded.");

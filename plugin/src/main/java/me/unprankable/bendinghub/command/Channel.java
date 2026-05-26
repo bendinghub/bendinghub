@@ -8,8 +8,12 @@ import org.bukkit.entity.Player;
 
 public class Channel {
     public static boolean execute(CommandSender sender, Command command, String label, String[] args) {
+        if (Bendinghub.configManager == null || !Bendinghub.configManager.isChatEnabled()) {
+            sender.sendMessage("Chat is disabled on this server.");
+            return true;
+        }
         if (!(sender instanceof Player)) {
-            Methods.sendPlayerMessage((Player) sender,"Only players can use this command.");
+            sender.sendMessage("Only players can use this command.");
             return true;
         }
         // if no channel is specified, send channel list
@@ -34,8 +38,11 @@ public class Channel {
 
      public static java.util.List<String> tabComplete(CommandSender sender, Command command, String label, String[] args) {
         // When tab-completing the channel name the args array will have length 2 (args[0] is the subcommand)
+        if (Bendinghub.configManager == null || !Bendinghub.configManager.isChatEnabled() || Bendinghub.chatManager == null) {
+            return java.util.Collections.emptyList();
+        }
 
-        String input = args[1] == null ? "" : args[1].toLowerCase();
+        String input = args.length > 1 && args[1] != null ? args[1].toLowerCase() : "";
         return Bendinghub.chatManager.getChannelManager().getChannels().stream()
                 .filter(channel -> sender.hasPermission("bendinghub.chat.channel." + channel.getId().toLowerCase()))
                 .map(ChatChannel::getId)

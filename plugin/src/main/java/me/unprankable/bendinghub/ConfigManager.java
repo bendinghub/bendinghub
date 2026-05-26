@@ -38,6 +38,7 @@ public class ConfigManager {
         }
 
         config = YamlConfiguration.loadConfiguration(configFile);
+        config.addDefault("chat.enabled", true);
         config.addDefault("debug", false);
         config.addDefault("chat.proxy.enabled", true);
         config.addDefault("chat.proxy.server-id", "server-1");
@@ -85,7 +86,9 @@ public class ConfigManager {
 
     public void reload(){
         load();
-        Bendinghub.chatManager.getChannelManager().reloadChannels();
+        if (Bendinghub.chatManager != null) {
+            Bendinghub.chatManager.getChannelManager().reloadChannels();
+        }
     }
 
     public FileConfiguration getConfig() {
@@ -94,5 +97,10 @@ public class ConfigManager {
 
     public ConfigurationSection getChannels() {
         return config.getConfigurationSection("chat.channels");
+    }
+
+    public boolean isChatEnabled() {
+        if (config == null) return true;
+        return config.getBoolean("chat.enabled", true);
     }
 }

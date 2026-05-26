@@ -35,12 +35,15 @@ public class BendinghubExpansion extends PlaceholderExpansion {
         String placeholder = getIdentifier() + "_" + params;
         Bendinghub.debug("Placeholder requested:" + placeholder);
         String value;
+        if (Bendinghub.chatManager == null || Bendinghub.configManager == null || !Bendinghub.configManager.isChatEnabled()) {
+            return "";
+        }
         switch (params){
             case "chatcolor":
-                value = Bendinghub.plugin.chatManager.getChatColorManager().getPlayerChatColor(player.getUniqueId());
+                value = Bendinghub.chatManager.getChatColorManager().getPlayerChatColor(player.getUniqueId());
                 break;
             case "channel":
-                value = Bendinghub.plugin.chatManager.getChannelManager().getPlayerChannel(player.getUniqueId()).getId();
+                value = Bendinghub.chatManager.getChannelManager().getPlayerChannel(player.getUniqueId()).getId();
                 break;
             default:
                 value = null;

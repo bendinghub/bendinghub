@@ -70,8 +70,12 @@ public class ChatColor {
     }
     private static final MiniMessage mm = MiniMessage.miniMessage();
     public static boolean execute(CommandSender sender, Command command, String label, String[] args) {
+        if (Bendinghub.configManager == null || !Bendinghub.configManager.isChatEnabled() || Bendinghub.chatManager == null) {
+            sender.sendMessage("Chat is disabled on this server.");
+            return true;
+        }
         if (!(sender instanceof Player)) {
-            Methods.sendPlayerMessage((Player) sender,"Only players can use this command.");
+            sender.sendMessage("Only players can use this command.");
             return true;
         }
         buildFormatAndColorCodes();
