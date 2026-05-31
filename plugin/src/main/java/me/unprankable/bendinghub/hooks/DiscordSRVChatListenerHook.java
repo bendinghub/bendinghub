@@ -47,15 +47,15 @@ public class DiscordSRVChatListenerHook {
         
         switch (currentChannel.getId()){
             case "global":
-                Bendinghub.debug("onDiscordChatProcess: routing message from " + player.getName() + " to Discord global channel");
                 event.setChannel("global");
                 break;
             case "staff":
-                Bendinghub.debug("onDiscordChatProcess: routing message from " + player.getName() + " to Discord staff channel");
                 event.setChannel("staff");
                 break;
+            case "local":
+                event.setChannel("local");
+                break;
             default:
-                Bendinghub.debug("onDiscordChatProcess: channel '" + currentChannel.getId() + "' not forwarded to Discord, cancelling");
                 event.setCancelled(true);
         }
     }
@@ -74,37 +74,36 @@ public class DiscordSRVChatListenerHook {
         String channel = DiscordSRV.getPlugin().getDestinationGameChannelNameForTextChannel(channelSentIn);
         Bendinghub.debug("DiscordMessageProcessed: mapped Discord channel '" + channelSentIn.getName() + "' to game channel: " + channel);
 
-        if (channel != null && channel.equalsIgnoreCase("staff")) {
-            Bendinghub.log.info("DiscordSRV: Routing message from Discord staff channel to Minecraft staff players");
+        if (channel != null && (channel.equalsIgnoreCase("staff") || channel.equalsIgnoreCase("local") || channel.equalsIgnoreCase("global"))) {
             event.setCancelled(true);
 
+            ChatChannel chatChannel = Bendinghub.chatManager.getChannelManager().getChannelById(channel);
             // Get the message and convert it to plain text to avoid ClassLoader issues with shaded Adventure library
-            String messageText = "<#A4A4A4>[<red>Staff</red>]</#A4A4A4> " + Methods.convertComponentStringToMiniMessage(event.getMinecraftMessage().toString());
+            String messageText = chatChannel.getPrefix() + " <reset>" + Methods.convertComponentStringToMiniMessage(event.getMinecraftMessage().toString());
 
             //Jump over to the Minecraft main server thread to safely run player logic
             Bukkit.getScheduler().runTask(Bendinghub.plugin, () -> {
 
-                ChatChannel staffChannel = Bendinghub.chatManager.getChannelManager().getChannelById("staff");
-                if (staffChannel == null) {
-                    Bendinghub.log.warning("DiscordSRV: Staff channel not found in configuration");
+                if (chatChannel == null) {
+                    Bendinghub.log.warning("DiscordSRV: " + channel + " channel not found in configuration");
                     return;
                 }
 
-                int staffPlayerCount = 0;
+                int PlayerCount = 0;
                 for (Player player : Bukkit.getOnlinePlayers()) {
-                    boolean isStaff = staffChannel.canView(player, player);
-                    Bendinghub.debug("Player: " + player.getName() + " Staff: " + isStaff);
-                    if (isStaff) {
+                    boolean allowed = chatChannel.canView(player, player);
+                    Bendinghub.debug("Player: " + player.getName() + " allowed: " + allowed);
+                    if (allowed) {
                         try {
                             Methods.sendPlayerMessage(player, messageText);
-                            staffPlayerCount++;
+                            PlayerCount++;
                         } catch (Exception e) {
                             Bendinghub.log.warning("Failed to send Discord message to player " + player.getName() + ": " + e.getMessage());
                         }
                     }
                 }
                 
-                Bendinghub.debug("DiscordSRV: Message sent to " + staffPlayerCount + " staff players and console");
+                Bendinghub.debug("DiscordSRV: Message sent to " + PlayerCount + " players and console");
                 try {
                     Methods.sendConsoleMessage(messageText);
                 } catch (Exception e) {
@@ -112,7 +111,7 @@ public class DiscordSRVChatListenerHook {
                 }
             });
         } else {
-            Bendinghub.debug("DiscordMessageProcessed: channel '" + channel + "' is not 'staff', ignoring");
+            Bendinghub.debug("DiscordMessageProcessed: channel '" + channel + "' is not 'staff/local/global', ignoring");
         }
     }
 

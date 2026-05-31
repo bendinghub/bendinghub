@@ -7,14 +7,23 @@ public class ChatManager {
     private final ChannelManager channelManager;
     private final ChatColorManager chatColorManager;
     private final ChatListener chatListener;
+    private final ChatPluginMessageListener chatPluginMessageListener;
 
     public ChatManager() {
         this.channelManager = new ChannelManager();
         this.chatColorManager = new ChatColorManager();
         this.chatListener = new ChatListener();
-        
+        this.chatPluginMessageListener = new ChatPluginMessageListener();
+
         // Register the chat listener
         Bukkit.getPluginManager().registerEvents(chatListener, Bendinghub.plugin);
+
+        if (Bendinghub.configManager != null && Bendinghub.configManager.getConfig().getBoolean("chat.proxy.enabled", true)) {
+            String forwardSubchannel = Bendinghub.configManager.getConfig().getString("chat.proxy.forward-subchannel", "bendinghub:chat");
+            Bukkit.getMessenger().registerOutgoingPluginChannel(Bendinghub.plugin, forwardSubchannel);
+            Bukkit.getMessenger().registerIncomingPluginChannel(Bendinghub.plugin, forwardSubchannel, chatPluginMessageListener);
+        }
+
         Bendinghub.log.info("ChatManager initialized and ChatListener registered.");
     }
 
@@ -28,6 +37,10 @@ public class ChatManager {
 
     public ChatListener getChatListener() {
         return chatListener;
+    }
+
+    public ChatPluginMessageListener getChatPluginMessageListener() {
+        return chatPluginMessageListener;
     }
 
 

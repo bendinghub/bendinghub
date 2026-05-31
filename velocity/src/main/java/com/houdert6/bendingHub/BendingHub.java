@@ -182,6 +182,7 @@ public class BendingHub {
     @Subscribe
     public void onChatPluginMessageFromBackend(PluginMessageEvent event){
         if(!BENDINGHUB_CHAT.equals(event.getIdentifier())) return;
+        if (!(event.getSource() instanceof ServerConnection)) return;
         event.setResult(PluginMessageEvent.ForwardResult.handled());
         Collection<RegisteredServer> servers = proxy.getAllServers();
         for(RegisteredServer server : servers){

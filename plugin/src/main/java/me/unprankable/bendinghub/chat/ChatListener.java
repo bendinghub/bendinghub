@@ -7,6 +7,7 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -53,10 +54,14 @@ public class ChatListener implements Listener {
         String plainText = PlainTextComponentSerializer.plainText().serialize(event.message());
         String formatted = activeChannel.fillInFormatValues(player, plainText);
         String resolved = Bendinghub.chatManager.convertLegacyToMiniMessage(formatted);
-        //create message data object
-        //send message data object to proxy
-        //MessageDataObject messageDataObject = new MessageDataObject(activeChannel, resolved, player, Bendinghub.configManager.getConfig().getString("chat.proxy.server-id"));
-        //messageDataObject.sendObject();
+
+        if (Bendinghub.configManager.getConfig().getBoolean("chat.proxy.enabled", true)
+                && Bendinghub.configManager.getConfig().getStringList("chat.proxy.forward-channels").stream().anyMatch(channelId -> channelId.equalsIgnoreCase(activeChannel.getId()))) {
+            String serverId = Bendinghub.configManager.getConfig().getString("chat.proxy.server-id", "server-1");
+            MessageDataObject messageDataObject = new MessageDataObject(activeChannel, resolved, player, serverId);
+            Bukkit.getScheduler().runTask(Bendinghub.plugin, messageDataObject::sendObject);
+        }
+
         // Filter viewers based on permissions and distance
         event.viewers().removeIf(viewer -> {
             if (!(viewer instanceof Player recipient)) return false; // Keep console
