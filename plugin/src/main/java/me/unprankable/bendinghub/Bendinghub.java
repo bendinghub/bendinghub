@@ -8,6 +8,8 @@ import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 import github.scarsz.discordsrv.DiscordSRV;
 
+import java.sql.SQLException;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public final class Bendinghub extends JavaPlugin {
@@ -17,6 +19,7 @@ public final class Bendinghub extends JavaPlugin {
     public static ChatManager chatManager;
     public static commandExecutor commandExecutor;
     public static boolean luckpermsEnabled;
+    public static StorageManager storageManager;
 
     @Override
     public void onEnable() {
@@ -26,6 +29,14 @@ public final class Bendinghub extends JavaPlugin {
         TownyChatHook townyChatHook = new TownyChatHook();
         townyChatHook.register(this);
         configManager.load();
+        // Initialize storage manager before chat manager so chat can use persistent storage
+        storageManager = new StorageManager(this.getLogger());
+        try {
+            storageManager.init();
+        } catch (SQLException e) {
+            Bendinghub.log.severe("Failed to initialize StorageManager (SQLite). Chat persistence and other features may not work.");
+            Bendinghub.log.log(Level.SEVERE, "StorageManager initialization error", e);
+        }
         // Initialize chat manager after config is loaded (ChannelManager reads config)
         if (configManager.isChatEnabled()) {
             chatManager = new ChatManager();
@@ -48,7 +59,22 @@ public final class Bendinghub extends JavaPlugin {
 
     @Override
     public void onDisable() {
+        // Persist chat data if the chat manager is enabled
+        if (chatManager != null && configManager != null && configManager.isChatEnabled()) {
+            try {
+                chatManager.getChannelManager().savePlayerChannels();
+            } catch (Exception e) {
+                Bendinghub.log.log(Level.WARNING, "Failed to save player channels on shutdown", e);
+            }
+            try {
+                chatManager.getChatColorManager().savePlayerChatColors();
+            } catch (Exception e) {
+                Bendinghub.log.log(Level.WARNING, "Failed to save player chat colors on shutdown", e);
+            }
+        }
 
+        // Close persistent storage
+        if (storageManager != null) storageManager.close();
     }
     public static void reloadPlugin() {
         if (configManager != null) {

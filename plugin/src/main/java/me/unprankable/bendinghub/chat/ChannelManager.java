@@ -3,10 +3,8 @@ package me.unprankable.bendinghub.chat;
 import me.unprankable.bendinghub.Bendinghub;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.configuration.file.YamlConfiguration;
-
-import java.io.File;
-import java.io.IOException;
+import java.util.Map;
+import java.sql.SQLException;
 import java.util.Collection;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -14,8 +12,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class ChannelManager {
     private final ConcurrentHashMap<UUID, String> playerChannels;
     private final ConcurrentHashMap<String, ChatChannel> registeredChannels;
-    private File playerChannelsFile;
-    private FileConfiguration playerChannelsConfig;
+    // persistence moved to StorageManager (data.db)
 
     public ChannelManager() {
         this.playerChannels = new ConcurrentHashMap<>();
@@ -53,38 +50,43 @@ public class ChannelManager {
     }
 
     public void loadPlayerChannels() {
-        playerChannelsFile = new File(Bendinghub.plugin.getDataFolder(), "playerChannels.yml");
         playerChannels.clear();
-        if (playerChannelsFile.exists()) {
-            playerChannelsConfig = YamlConfiguration.loadConfiguration(playerChannelsFile);
-
-            // Load each player's channel
-            for (String key : playerChannelsConfig.getKeys(false)) {
-                try {
-                    UUID uuid = UUID.fromString(key);
-                    String channelId = playerChannelsConfig.getString(key);
-                    if (registeredChannels.containsKey(channelId)) {
-                        playerChannels.put(uuid, channelId);
-                    }
-                } catch (IllegalArgumentException e) {
-                    Bendinghub.log.warning("Invalid UUID in playerChannels.yml: " + key);
+        if (Bendinghub.storageManager != null && Bendinghub.storageManager.isConnected()) {
+            try {
+                Map<UUID, String> loaded = Bendinghub.storageManager.loadAllPlayerChannels();
+                for (Map.Entry<UUID, String> e : loaded.entrySet()) {
+                    UUID uuid = e.getKey();
+                            String channelId = e.getValue();
+                            if (channelId != null && registeredChannels.containsKey(channelId)) {
+                                playerChannels.put(uuid, channelId);
+                            } else {
+                                playerChannels.put(uuid, "global");
+                            }
                 }
+                Bendinghub.log.info("Loaded " + playerChannels.size() + " player channels from data.db.");
+            } catch (SQLException ex) {
+                Bendinghub.log.severe("Failed to load player channels from data.db: " + ex.getMessage());
             }
         } else {
-            playerChannelsConfig = new YamlConfiguration();
+            Bendinghub.log.info("StorageManager not available; starting with empty player channel assignments.");
         }
     }
 
     public void savePlayerChannels() {
-        try {
-            playerChannelsConfig = new YamlConfiguration();
-            for (UUID uuid : playerChannels.keySet()) {
-                playerChannelsConfig.set(uuid.toString(), playerChannels.get(uuid));
-            }
-            playerChannelsConfig.save(playerChannelsFile);
-        } catch (IOException exception) {
-            Bendinghub.log.severe("Failed to save playerChannels.yml: " + exception.getMessage());
+        if (Bendinghub.storageManager == null || !Bendinghub.storageManager.isConnected()) {
+            Bendinghub.log.severe("StorageManager not available; cannot save player channels to data.db.");
+            return;
         }
+        int saved = 0;
+        for (Map.Entry<UUID, String> entry : playerChannels.entrySet()) {
+            try {
+                Bendinghub.storageManager.setPlayerChannel(entry.getKey(), entry.getValue());
+                saved++;
+            } catch (SQLException ex) {
+                Bendinghub.log.severe("Failed to save player channel for " + entry.getKey() + ": " + ex.getMessage());
+            }
+        }
+        Bendinghub.log.info("Saved " + saved + " player channels to data.db.");
     }
 
     public ChatChannel getPlayerChannel(UUID uuid) {
@@ -96,7 +98,14 @@ public class ChannelManager {
         if (registeredChannels.containsKey(channelId)) {
             playerChannels.put(uuid, channelId);
         }
-        savePlayerChannels();
+        // Persist single change
+        if (Bendinghub.storageManager != null && Bendinghub.storageManager.isConnected()) {
+            try {
+                Bendinghub.storageManager.setPlayerChannel(uuid, playerChannels.getOrDefault(uuid, "global"));
+            } catch (SQLException ex) {
+                Bendinghub.log.severe("Failed to persist player channel for " + uuid + ": " + ex.getMessage());
+            }
+        }
     }
 
     /**
