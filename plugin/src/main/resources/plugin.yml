@@ -39,6 +39,12 @@ commands:
 
 permissions:
   # --- GROUP ROLES ---
+  bendinghub.default:
+    description: default permission for players
+    defualt: true
+    children:
+      bendinghub.command: true
+      bendinghub.chat: true
   bendinghub.moderator:
     description: Allows players to use moderator commands
     default: false

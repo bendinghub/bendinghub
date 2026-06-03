@@ -5,6 +5,7 @@ import me.unprankable.bendinghub.Methods;
 import me.unprankable.bendinghub.chat.ChatListener;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
+import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -107,17 +108,33 @@ public class ChatColor extends BendinghubCommand{
             sender.sendMessage("Only players can use this command.");
             return true;
         }
+
         buildFormatAndColorCodes();
-        Player player = (Player) sender;
-        String input = Bendinghub.chatManager.convertLegacyToMiniMessage(args[1]);
+
+        String input;
+        if (args.length == 1){
+            input = "off";
+        } else {
+            input = Bendinghub.chatManager.convertLegacyToMiniMessage(args[1]);
+        }
+        Player player;
+        if (args.length == 2){
+            player = (Player) sender;
+        } else {
+            if (sender.hasPermission("bendinghub.command.chatcolor.others")) {
+                player = Bukkit.getPlayer(args[2]);
+            } else {
+                player = (Player) sender;
+            }
+        }
         if (input.equals("reset") || input.equals("none") || input.equals("clear") || input.equals("off")) {
             Bendinghub.chatManager.getChatColorManager().setPlayerChatColor(player.getUniqueId(), null);
-            Methods.sendPlayerMessage((Player) sender,"Chat color reset to default.");
+            Methods.sendPlayerMessage(player,"Chat color reset to default.");
             return true;
         }
         List<String> blacklist = Bendinghub.configManager.getConfig().getStringList("chat.chatcolor.blacklist");
         if (blacklist.contains(input.toLowerCase())) {
-            Methods.sendPlayerMessage((Player) sender,"That chat color is not allowed.");
+            Methods.sendPlayerMessage(player,"<red>That chat color is not allowed.");
             return true;
         }
         List<String> inputColors = hasColors(input);
@@ -126,7 +143,7 @@ public class ChatColor extends BendinghubCommand{
         if (!inputColors.isEmpty()) {
             for (String color : inputColors) {
                 if (!player.hasPermission("bendinghub.chat.color." + color.toLowerCase())) {
-                    Methods.sendPlayerMessage((Player) sender,"You do not have permission to use the " + color + " chat color.");
+                    Methods.sendPlayerMessage(player,"<red>You do not have permission to use the " + color + " chat color.");
                     input = input.replaceAll(colors.get(color), "");
                 }
             }
@@ -135,14 +152,17 @@ public class ChatColor extends BendinghubCommand{
         if (!inputFormats.isEmpty()) {
             for (String format : inputFormats) {
                 if (!player.hasPermission("bendinghub.chat.format." + format.toLowerCase())) {
-                    Methods.sendPlayerMessage((Player) sender,"You do not have permission to use the " + format + " chat format.");
+                    Methods.sendPlayerMessage(player,"<red>You do not have permission to use the " + format + " chat format.");
                     input = input.replaceAll(formats.get(format), "");
                 }
             }
         }
 
         Bendinghub.chatManager.getChatColorManager().setPlayerChatColor(player.getUniqueId(), input);
-        Methods.sendPlayerMessage(player,"Chat color set to: " + input + "Example");
+        Methods.sendPlayerMessage(player,"<green>Chat color set to: " + input + "Example");
+        if (!player.getUniqueId().toString().equals(((Player) sender).getUniqueId().toString())){
+            Methods.sendPlayerMessage((Player) sender, "<green>Set chat color to " + input + "Example<green> For: <yellow>" + player.getName() + "<reset>");
+        }
         return true;
     }
 

@@ -1,6 +1,7 @@
 package me.unprankable.bendinghub.command;
 import me.unprankable.bendinghub.Methods;
 import me.unprankable.bendinghub.chat.ChatChannel;
+import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import me.unprankable.bendinghub.Bendinghub;
@@ -52,12 +53,26 @@ public class Channel extends BendinghubCommand{
             }
             return true;
         }
-        Player player = (Player) sender;
+
+        Player player;
+        if (args.length == 2){
+            player = (Player) sender;
+        } else {
+            if (sender.hasPermission("bendinghub.command.channel.others")) {
+                player = Bukkit.getPlayer(args[2]);
+            } else {
+                player = (Player) sender;
+            }
+        }
+
         if (player.hasPermission("bendinghub.chat.channel." + (args.length > 1 ? args[1].toLowerCase() : "global"))) {
             Bendinghub.chatManager.getChannelManager().setPlayerChannel(player.getUniqueId(), args.length > 1 ? args[1] : null);
-            Methods.sendPlayerMessage((Player) sender,"Switched to channel: " + (args.length > 1 ? args[1] : "default"));
+            Methods.sendPlayerMessage((Player) sender,"<green>Switched to channel: <yellow>" + (args.length > 1 ? args[1] : "default") + "<reset>");
         } else {
-            Methods.sendPlayerMessage((Player) sender,"You cannot switch to that channel.");
+            Methods.sendPlayerMessage((Player) sender,"<red>You cannot switch to that channel.");
+        }
+        if (!player.getUniqueId().toString().equals(((Player) sender).getUniqueId().toString())){
+            Methods.sendPlayerMessage((Player) sender, "<green>Set channel to " + args[1] + " For: <yellow>" + player.getName() + "<reset>");
         }
         return true;
     }
