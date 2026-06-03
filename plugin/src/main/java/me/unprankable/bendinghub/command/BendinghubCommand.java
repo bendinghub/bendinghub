@@ -1,5 +1,7 @@
 package me.unprankable.bendinghub.command;
 
+import me.unprankable.bendinghub.Bendinghub;
+import me.unprankable.bendinghub.Methods;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 
@@ -18,6 +20,7 @@ public class BendinghubCommand {
                 aliases.put(alias, getName());
             }
         }
+        Methods.registerAlias(getName(), Bendinghub.plugin.getName(), getName());
     }
 
     public static List<String> getCommandNames(){

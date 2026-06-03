@@ -25,6 +25,13 @@ public class commandExecutor implements CommandExecutor, TabCompleter {
         new ChatColor();
         new ClearChat();
         new namemc();
+        Methods.registerAlias("tc", "bendinghub:channel", "town");
+        Methods.registerAlias("townchat", "bendinghub:channel", "town");
+        Methods.registerAlias("nc", "bendinghub:channel", "nation");
+        Methods.registerAlias("nationchat", "bendinghub:channel", "nation");
+        Methods.registerAlias("g", "bendinghub:channel", "global");
+        Methods.registerAlias("global", "bendinghub:channel", "town");
+        Methods.registerAlias("globalchat", "bendinghub:channel", "global");
     }
 
     public commandExecutor() {
