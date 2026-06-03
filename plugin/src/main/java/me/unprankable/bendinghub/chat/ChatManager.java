@@ -19,7 +19,7 @@ public class ChatManager {
         Bukkit.getPluginManager().registerEvents(chatListener, Bendinghub.plugin);
 
         if (Bendinghub.configManager != null && Bendinghub.configManager.getConfig().getBoolean("chat.proxy.enabled", true)) {
-            String forwardSubchannel = Bendinghub.configManager.getConfig().getString("chat.proxy.forward-subchannel", "bendinghub:chat");
+            String forwardSubchannel = MessageDataObject.BENDINGHUB_CHAT;
             Bukkit.getMessenger().registerOutgoingPluginChannel(Bendinghub.plugin, forwardSubchannel);
             Bukkit.getMessenger().registerIncomingPluginChannel(Bendinghub.plugin, forwardSubchannel, chatPluginMessageListener);
         }

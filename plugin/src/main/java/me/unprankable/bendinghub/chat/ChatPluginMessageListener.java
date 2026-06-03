@@ -25,6 +25,13 @@ public class ChatPluginMessageListener implements PluginMessageListener {
             return;
         }
 
+        if (data.getReason() == MessageDataObject.Reason.CLEAR){
+            boolean recieve = Bendinghub.configManager.getConfig().getBoolean("chat.clearchat.recieve");
+            if (!recieve){
+                return;
+            }
+        }
+
         ChatChannel chatChannel = Bendinghub.chatManager.getChannelManager().getChannelById(data.getChannelId());
         if (chatChannel == null) {
             Bendinghub.debug("ChatPluginMessageListener: unknown channel '" + data.getChannelId() + "', dropping payload");

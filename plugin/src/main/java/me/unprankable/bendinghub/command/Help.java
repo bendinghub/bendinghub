@@ -7,8 +7,25 @@ import org.bukkit.entity.Player;
 
 import java.util.List;
 
-public class Help {
-    public static boolean execute(CommandSender sender, Command command, String label, String[] args) {
+public class Help extends BendinghubCommand{
+
+    @Override
+    public String getAuthor(){
+        return "Unprankable";
+    }
+
+    @Override
+    public String getName(){
+        return "help";
+    }
+
+    @Override
+    public List<String> getAliases(){
+        return List.of("?");
+    }
+
+    @Override
+    public boolean execute(CommandSender sender, Command command, String label, String[] args) {
         if (args.length == 1) {
             Methods.sendPlayerMessage((Player) sender,"Bendinghub Commands:");
             Methods.sendPlayerMessage((Player) sender,"/bendinghub channel <channel> - Switch your active chat channel");
@@ -47,7 +64,8 @@ public class Help {
         return true;
     }
 
-    public static List<String> tabComplete(CommandSender sender, Command command, String label, String[] args) {
-        return java.util.Arrays.asList("channel", "chatcolor", "reload","help");
+    @Override
+    public List<String> tabComplete(CommandSender sender, Command command, String label, String[] args) {
+        return BendinghubCommand.getCommandNames();
     }
 }

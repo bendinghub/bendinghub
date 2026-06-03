@@ -46,4 +46,10 @@ public class Methods {
 
         return sb.toString();
     }
+
+    public static Component convertMiniMessageStringToComponent(String minimessageString){
+        String converted = Bendinghub.chatManager.convertLegacyToMiniMessage(minimessageString);
+        Component deserialized = mm.deserialize(converted);
+        return deserialized;
+    }
 }

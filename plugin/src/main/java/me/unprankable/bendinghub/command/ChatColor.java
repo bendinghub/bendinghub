@@ -18,9 +18,11 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class ChatColor {
+public class ChatColor extends BendinghubCommand{
     public static ConcurrentHashMap<String, String> formats = new ConcurrentHashMap<>();
     public static ConcurrentHashMap<String, String> colors = new ConcurrentHashMap<>();
+    private static final MiniMessage mm = MiniMessage.miniMessage();
+
     private static void buildFormatAndColorCodes(){
         formats.put("bold", "<bold>");
         formats.put("underline", "<underline>");
@@ -68,8 +70,35 @@ public class ChatColor {
         }
         return formatList;
     }
-    private static final MiniMessage mm = MiniMessage.miniMessage();
-    public static boolean execute(CommandSender sender, Command command, String label, String[] args) {
+
+
+    @Override
+    public String getAuthor(){
+        return "Unprankable";
+    }
+
+    @Override
+    public String getName(){
+        return "chatcolor";
+    }
+
+    @Override
+    public boolean onlyPlayers(){
+        return true;
+    }
+
+    @Override
+    public String getUsage(){
+        return "/bh chatcolor <color>";
+    }
+
+    @Override
+    public List<String> getAliases(){
+        return List.of("cc", "color");
+    }
+
+    @Override
+    public boolean execute(CommandSender sender, Command command, String label, String[] args) {
         if (Bendinghub.configManager == null || !Bendinghub.configManager.isChatEnabled() || Bendinghub.chatManager == null) {
             sender.sendMessage("Chat is disabled on this server.");
             return true;
@@ -117,7 +146,8 @@ public class ChatColor {
         return true;
     }
 
-    public static List<String> tabComplete(CommandSender sender, Command command, String label, String[] args) {
+    @Override
+    public List<String> tabComplete(CommandSender sender, Command command, String label, String[] args) {
         List<String> suggest = new ArrayList<>();
 
         suggest.add("<black>");                  suggest.add("&0");

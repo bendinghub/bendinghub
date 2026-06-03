@@ -42,8 +42,8 @@ public class ConfigManager {
         config.addDefault("debug", false);
         config.addDefault("chat.proxy.enabled", true);
         config.addDefault("chat.proxy.server-id", "server-1");
-        config.addDefault("chat.proxy.forward-subchannel", "bendinghub:chat");
         config.addDefault("chat.proxy.forward-channels", Arrays.asList("global", "staff"));
+        config.addDefault("chat.clearchat.recieve", true);
         config.addDefault("chat.placeholders.<displayname>", "%player_name%");
         config.addDefault("chat.placeholders.<rank>", "%luckperms_prefix%");
         config.addDefault("chat.placeholders.<suffix>", "%luckperms_suffix%");
@@ -102,5 +102,14 @@ public class ConfigManager {
     public boolean isChatEnabled() {
         if (config == null) return true;
         return config.getBoolean("chat.enabled", true);
+    }
+
+    public int getClearChatLines(){
+        if (config == null) return 100;
+        return config.getInt("chat.clearchat.linelength", 100);
+    }
+
+    public ConfigurationSection getClearChatServers(){
+        return config.getConfigurationSection("chat.clearchat.servers");
     }
 }

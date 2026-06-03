@@ -29,6 +29,7 @@ public final class Bendinghub extends JavaPlugin {
         TownyChatHook townyChatHook = new TownyChatHook();
         townyChatHook.register(this);
         configManager.load();
+        commandExecutor.loadCommands();
         // Initialize storage manager before chat manager so chat can use persistent storage
         storageManager = new StorageManager(this.getLogger());
         try {
@@ -48,7 +49,9 @@ public final class Bendinghub extends JavaPlugin {
             new BendinghubExpansion().register();
             Bendinghub.log.info("Registered PlaceholderAPI expansion: Bendinghub");
         }
-        // Register admin commands
+
+
+        // Register commands
         commandExecutor = new commandExecutor();
         luckpermsEnabled = Bukkit.getPluginManager().isPluginEnabled("LuckPerms");
         Bendinghub.log.info("Enabling Bendinghub...");

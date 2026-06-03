@@ -6,16 +6,42 @@ import org.bukkit.command.CommandSender;
 import me.unprankable.bendinghub.Bendinghub;
 import org.bukkit.entity.Player;
 
-public class Channel {
-    public static boolean execute(CommandSender sender, Command command, String label, String[] args) {
+import java.util.List;
+
+public class Channel extends BendinghubCommand{
+
+    @Override
+    public String getAuthor(){
+        return "Unprankable";
+    }
+
+    @Override
+    public String getName(){
+        return "channel";
+    }
+
+    @Override
+    public boolean onlyPlayers(){
+        return true;
+    }
+
+    @Override
+    public String getUsage(){
+        return "/bh channel <channel_name>";
+    }
+
+    @Override
+    public List<String> getAliases(){
+        return List.of("ch");
+    }
+
+    @Override
+    public boolean execute(CommandSender sender, Command command, String label, String[] args) {
         if (Bendinghub.configManager == null || !Bendinghub.configManager.isChatEnabled()) {
             sender.sendMessage("Chat is disabled on this server.");
             return true;
         }
-        if (!(sender instanceof Player)) {
-            sender.sendMessage("Only players can use this command.");
-            return true;
-        }
+
         // if no channel is specified, send channel list
         if (args.length == 1) {
             Methods.sendPlayerMessage((Player) sender,"Available channels:");
@@ -36,7 +62,8 @@ public class Channel {
         return true;
     }
 
-     public static java.util.List<String> tabComplete(CommandSender sender, Command command, String label, String[] args) {
+    @Override
+    public List<String> tabComplete(CommandSender sender, Command command, String label, String[] args) {
         // When tab-completing the channel name the args array will have length 2 (args[0] is the subcommand)
         if (Bendinghub.configManager == null || !Bendinghub.configManager.isChatEnabled() || Bendinghub.chatManager == null) {
             return java.util.Collections.emptyList();

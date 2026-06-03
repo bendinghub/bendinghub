@@ -12,7 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-public class namemc {
+public class namemc extends BendinghubCommand{
 
     public static boolean likedServer(UUID playerUUID) {
         try {
@@ -30,7 +30,28 @@ public class namemc {
         }
     }
 
-    public static boolean execute(CommandSender sender, Command command, String label, String[] args) {
+    @Override
+    public String getAuthor(){
+        return "Unprankable";
+    }
+
+    @Override
+    public String getName(){
+        return "namemc";
+    }
+
+    @Override
+    public boolean onlyPlayers(){
+        return true;
+    }
+
+    @Override
+    public List<String> getAliases(){
+        return List.of("nm");
+    }
+
+    @Override
+    public boolean execute(CommandSender sender, Command command, String label, String[] args) {
         if (!(sender instanceof Player)) {
             sender.sendMessage(" Only players can use this command");
             return true;
@@ -53,7 +74,8 @@ public class namemc {
         }
     }
 
-    public static List<String> tabComplete(CommandSender sender, Command command, String label, String[] args) {
+    @Override
+    public List<String> tabComplete(CommandSender sender, Command command, String label, String[] args) {
         return List.of();
     }
 }
