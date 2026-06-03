@@ -1,4 +1,6 @@
-add clearchat, mutechat and unmutechat
-add ability to set others channel/chatcolor
-add invidiual chat color and format permissions done
-add a /title command to set your title.
+mutechat
+tab
+    header
+    name formatting
+    footer
+skripts

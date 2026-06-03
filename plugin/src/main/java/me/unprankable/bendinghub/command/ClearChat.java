@@ -3,7 +3,6 @@ package me.unprankable.bendinghub.command;
 import me.unprankable.bendinghub.Bendinghub;
 import me.unprankable.bendinghub.Methods;
 import me.unprankable.bendinghub.chat.MessageDataObject;
-import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
