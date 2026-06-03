@@ -8,6 +8,7 @@ import me.unprankable.bendinghub.Bendinghub;
 import org.bukkit.entity.Player;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class Channel extends BendinghubCommand{
 
@@ -83,12 +84,22 @@ public class Channel extends BendinghubCommand{
         if (Bendinghub.configManager == null || !Bendinghub.configManager.isChatEnabled() || Bendinghub.chatManager == null) {
             return java.util.Collections.emptyList();
         }
-
-        String input = args.length > 1 && args[1] != null ? args[1].toLowerCase() : "";
-        return Bendinghub.chatManager.getChannelManager().getChannels().stream()
-                .filter(channel -> sender.hasPermission("bendinghub.chat.channel." + channel.getId().toLowerCase()))
-                .map(ChatChannel::getId)
-                .filter(id -> id.toLowerCase().startsWith(input))
-                .toList();
+        switch(args.length){
+            case 2:
+                String input = args.length > 1 && args[1] != null ? args[1].toLowerCase() : "";
+                return Bendinghub.chatManager.getChannelManager().getChannels().stream()
+                        .filter(channel -> sender.hasPermission("bendinghub.chat.channel." + channel.getId().toLowerCase()))
+                        .map(ChatChannel::getId)
+                        .filter(id -> id.toLowerCase().startsWith(input))
+                        .toList();
+            case 3:
+                if(sender.hasPermission("bendinghub.command.channel.others")){
+                    return Bukkit.getOnlinePlayers().stream().map(Player::getName).collect(Collectors.toList());
+                } else {
+                    return List.of();
+                }
+            default:
+                return List.of();
+        }
     }
 }
