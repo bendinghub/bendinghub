@@ -30,7 +30,7 @@ public class commandExecutor implements CommandExecutor, TabCompleter {
         Methods.registerAlias("nc", "bendinghub:channel", "nation");
         Methods.registerAlias("nationchat", "bendinghub:channel", "nation");
         Methods.registerAlias("g", "bendinghub:channel", "global");
-        Methods.registerAlias("global", "bendinghub:channel", "town");
+        Methods.registerAlias("global", "bendinghub:channel", "global");
         Methods.registerAlias("globalchat", "bendinghub:channel", "global");
     }
 

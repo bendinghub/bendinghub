@@ -12,6 +12,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class ChannelManager {
     private final ConcurrentHashMap<UUID, String> playerChannels;
     private final ConcurrentHashMap<String, ChatChannel> registeredChannels;
+    public static String DEFAULT_CHANNEL_ID = "local";
     // persistence moved to StorageManager (data.db)
 
     public ChannelManager() {
@@ -60,7 +61,7 @@ public class ChannelManager {
                             if (channelId != null && registeredChannels.containsKey(channelId)) {
                                 playerChannels.put(uuid, channelId);
                             } else {
-                                playerChannels.put(uuid, "global");
+                                playerChannels.put(uuid, DEFAULT_CHANNEL_ID);
                             }
                 }
                 Bendinghub.log.info("Loaded " + playerChannels.size() + " player channels from data.db.");
@@ -90,7 +91,7 @@ public class ChannelManager {
     }
 
     public ChatChannel getPlayerChannel(UUID uuid) {
-        String channelId = playerChannels.getOrDefault(uuid, "global");
+        String channelId = playerChannels.getOrDefault(uuid, DEFAULT_CHANNEL_ID);
         return registeredChannels.get(channelId);
     }
 
@@ -101,7 +102,7 @@ public class ChannelManager {
         // Persist single change
         if (Bendinghub.storageManager != null && Bendinghub.storageManager.isConnected()) {
             try {
-                Bendinghub.storageManager.setPlayerChannel(uuid, playerChannels.getOrDefault(uuid, "global"));
+                Bendinghub.storageManager.setPlayerChannel(uuid, playerChannels.getOrDefault(uuid, DEFAULT_CHANNEL_ID));
             } catch (SQLException ex) {
                 Bendinghub.log.severe("Failed to persist player channel for " + uuid + ": " + ex.getMessage());
             }
@@ -145,7 +146,7 @@ public class ChannelManager {
         for (UUID uuid : playerChannels.keySet()) {
             String ch = playerChannels.get(uuid);
             if (ch == null || !registeredChannels.containsKey(ch)) {
-                playerChannels.put(uuid, "global");
+                playerChannels.put(uuid, DEFAULT_CHANNEL_ID);
             }
         }
 

@@ -13,10 +13,12 @@ import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
+import java.util.List;
 
 
 public class DiscordSRVChatListenerHook {
     public static MiniMessage mm = MiniMessage.miniMessage();
+    public static final List<String> ALLOWED_RECIEVING_CHANNELS = List.of("staff","local","global");
     @Subscribe(priority = ListenerPriority.NORMAL)
     public void onDiscordChatProcess(GameChatMessagePreProcessEvent event) {
         // If chat is disabled or not initialized, cancel all Discord forwarding
@@ -42,21 +44,14 @@ public class DiscordSRVChatListenerHook {
             event.setCancelled(true);
             return;
         }
-        
+        String channelId = currentChannel.getId();
         Bendinghub.debug("onDiscordChatProcess: player " + player.getName() + " in channel '" + currentChannel.getId() + "'");
-        
-        switch (currentChannel.getId()){
-            case "global":
-                event.setChannel("global");
-                break;
-            case "staff":
-                event.setChannel("staff");
-                break;
-            case "local":
-                event.setChannel("local");
-                break;
-            default:
-                event.setCancelled(true);
+
+
+        if (Methods.doesChannelExist(channelId)){
+            event.setChannel(channelId);
+        } else {
+            event.setCancelled(true);
         }
     }
 
@@ -73,8 +68,8 @@ public class DiscordSRVChatListenerHook {
         
         String channel = DiscordSRV.getPlugin().getDestinationGameChannelNameForTextChannel(channelSentIn);
         Bendinghub.debug("DiscordMessageProcessed: mapped Discord channel '" + channelSentIn.getName() + "' to game channel: " + channel);
-
-        if (channel != null && (channel.equalsIgnoreCase("staff") || channel.equalsIgnoreCase("local") || channel.equalsIgnoreCase("global"))) {
+        ALLOWED_RECIEVING_CHANNELS.contains(channel.toLowerCase());
+        if (channel != null && ALLOWED_RECIEVING_CHANNELS.contains(channel.toLowerCase())) {
             event.setCancelled(true);
 
             ChatChannel chatChannel = Bendinghub.chatManager.getChannelManager().getChannelById(channel);

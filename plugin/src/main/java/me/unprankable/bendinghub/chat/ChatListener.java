@@ -1,11 +1,8 @@
 package me.unprankable.bendinghub.chat;
 
-import io.papermc.paper.chat.ChatRenderer;
 import io.papermc.paper.event.player.AsyncChatEvent;
 import me.unprankable.bendinghub.Bendinghub;
-import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
-import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -52,8 +49,8 @@ public class ChatListener implements Listener {
             return;
         }
         String plainText = PlainTextComponentSerializer.plainText().serialize(event.message());
-        String formatted = activeChannel.fillInFormatValues(player, plainText);
-        String resolved = Bendinghub.chatManager.convertLegacyToMiniMessage(formatted);
+        String formatted = activeChannel.fillInFormatValues(player);
+        String resolved = ChatManager.convertLegacyToMiniMessage(formatted);
 
         if (Bendinghub.configManager.getConfig().getBoolean("chat.proxy.enabled", true)
                 && Bendinghub.configManager.getConfig().getStringList("chat.proxy.forward-channels").stream().anyMatch(channelId -> channelId.equalsIgnoreCase(activeChannel.getId()))) {
@@ -70,8 +67,14 @@ public class ChatListener implements Listener {
         });
 
         // Format and render the message
-        event.renderer(ChatRenderer.viewerUnaware((source, sourceDisplayName, message) -> mm.deserialize(resolved)));
-//        event.renderer((source, sourceDisplayName, message, viewer) -> mm.deserialize(resolved));
+        //event.renderer(ChatRenderer.viewerUnaware((source, sourceDisplayName, message) -> mm.deserialize(resolved)));
+        event.renderer((source, sourceDisplayName, message, viewer) -> {
+            if (viewer instanceof Player recipient) {
+                return mm.deserialize(activeChannel.setMessage(player, recipient, resolved, plainText));
+            }
+
+            return mm.deserialize(resolved.replace("<message>", plainText));
+        });
 
     }
 }

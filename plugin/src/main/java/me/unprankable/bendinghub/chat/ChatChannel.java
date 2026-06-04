@@ -1,10 +1,13 @@
 package me.unprankable.bendinghub.chat;
 
 import me.unprankable.bendinghub.Bendinghub;
+import me.unprankable.bendinghub.Methods;
 import me.unprankable.bendinghub.hooks.PlaceholderAPIHook;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 import me.clip.placeholderapi.PlaceholderAPI;
+
+import java.util.List;
 import java.util.Optional;
 
 public class ChatChannel {
@@ -41,13 +44,18 @@ public class ChatChannel {
     public double getRadius() {
         return radius;
     }
-    public String fillInFormatValues(Player player, String message) {
-        String text = this.format.replace("<prefix>", this.getPrefix())
-                .replace("<message>", message);
+    public String fillInFormatValues(Player player) {
+        return PlaceholderAPIHook.parsePlaceholders(player, this.format.replace("<prefix>", this.getPrefix()));
+    }
+    public String setMessage(Player sender, Player viewer,String format ,String message){
+        message = ChatManager.convertLegacyToMiniMessage(message);
+        message = Methods.filter(sender, message);
 
-        // Soft PlaceholderAPI support: if PlaceholderAPI is installed, use it to replace placeholders
-        text = PlaceholderAPIHook.parsePlaceholders(player, text);
-        return text;
+        if(sender.hasPermission("bendinghub.chat.placeholders")){//convert legacy again just incase a placeholder has a legacy code
+            return ChatManager.convertLegacyToMiniMessage(PlaceholderAPIHook.parsePlaceholders(viewer, format.replace("<message>",message)));
+        } else {
+            return format.replace("<message>",message);
+        }
     }
 
     public boolean canView(Player viewer, Player sender) {

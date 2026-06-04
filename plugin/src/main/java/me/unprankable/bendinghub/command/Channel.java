@@ -1,5 +1,6 @@
 package me.unprankable.bendinghub.command;
 import me.unprankable.bendinghub.Methods;
+import me.unprankable.bendinghub.chat.ChannelManager;
 import me.unprankable.bendinghub.chat.ChatChannel;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
@@ -66,7 +67,7 @@ public class Channel extends BendinghubCommand{
             }
         }
 
-        if (player.hasPermission("bendinghub.chat.channel." + (args.length > 1 ? args[1].toLowerCase() : "global"))) {
+        if (player.hasPermission("bendinghub.chat.channel." + (args.length > 1 ? args[1].toLowerCase() : ChannelManager.DEFAULT_CHANNEL_ID))) {
             Bendinghub.chatManager.getChannelManager().setPlayerChannel(player.getUniqueId(), args.length > 1 ? args[1] : null);
             Methods.sendPlayerMessage((Player) sender,"<green>Switched to channel: <yellow>" + (args.length > 1 ? args[1] : "default") + "<reset>");
         } else {

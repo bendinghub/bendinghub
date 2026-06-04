@@ -116,7 +116,9 @@ permissions:
       bendinghub.chat.format.strikethrough: true
       bendinghub.chat.format.underline: true
       bendinghub.chat.format.italic: true
-
+  bendinghub.chat.placeholders:
+    description: Allows players to use placeholders in message
+    default: false
   # --- COMMAND PARENT & SUB-NODES ---
   bendinghub.command:
     description: Allows players to use the base bendinghub command
