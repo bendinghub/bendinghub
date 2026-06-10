@@ -15,6 +15,7 @@ import org.bukkit.scoreboard.Team;
 
 import javax.swing.event.TableModelListener;
 import java.sql.SQLException;
+import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -72,6 +73,7 @@ public final class Bendinghub extends JavaPlugin {
         if (Bukkit.getPluginManager().isPluginEnabled("DiscordSRV") && configManager.isChatEnabled()) {
             DiscordSRV.api.subscribe(new DiscordSRVChatListenerHook());
         }
+
     }
 
     @Override

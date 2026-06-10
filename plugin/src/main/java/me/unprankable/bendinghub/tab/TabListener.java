@@ -11,6 +11,8 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 
+import java.util.UUID;
+
 public class TabListener implements Listener {
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event){
@@ -27,6 +29,7 @@ public class TabListener implements Listener {
                 }
             }
         }
+        Bendinghub.tabManager.fakePlayer.updateNetworkPlayerSlot(UUID.fromString("be8796dd-4d06-4f7b-b6c7-96625f8021d0"), "houdert6", "<red>Founder houdert6");
         format = ChatManager.convertLegacyToMiniMessage(PlaceholderAPIHook.parsePlaceholders(player, format));
         String serverName = Bendinghub.configManager.getConfig().getString("chat.proxy.server-id", "server-1");
         PlayerDataObject playerDataObject = new PlayerDataObject(format, player.getName(), player.getUniqueId().toString(), PlaceholderAPIHook.parsePlaceholders(player, "%luckperms_primary_group_name%"), serverName, "JOIN");
