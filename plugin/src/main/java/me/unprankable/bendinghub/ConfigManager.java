@@ -112,4 +112,22 @@ public class ConfigManager {
     public ConfigurationSection getClearChatServers(){
         return config.getConfigurationSection("chat.clearchat.servers");
     }
+
+    public String getTabHeader(){
+        List<String> lines = config.getStringList("tab.header");
+        String header = "";
+        for (String line: lines){
+            header += line + "\n";
+        }
+        return header;
+    }
+
+    public String getTabFooter(){
+        List<String> lines = config.getStringList("tab.footer");
+        String footer = "";
+        for (String line: lines){
+            footer += line + "\n";
+        }
+        return footer;
+    }
 }

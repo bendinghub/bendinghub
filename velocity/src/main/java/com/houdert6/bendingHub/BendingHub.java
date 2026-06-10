@@ -46,6 +46,7 @@ public class BendingHub {
     private static final MinecraftChannelIdentifier MINIGAME_INFO = MinecraftChannelIdentifier.create("bendinghub", "minigameinfo");
     private static final MinecraftChannelIdentifier MINIGAME_SEND = MinecraftChannelIdentifier.create("bendinghub", "minigamesend");
     private static final MinecraftChannelIdentifier BENDINGHUB_CHAT = MinecraftChannelIdentifier.create("bendinghub", "chat");
+    private static final MinecraftChannelIdentifier BENDINGHUB_TAB = MinecraftChannelIdentifier.create("bendinghub", "tab");
     private final Map<Player, byte[]> minigameInfoMap = new HashMap<>();
 
     @Inject
@@ -124,7 +125,7 @@ public class BendingHub {
         proxy.getChannelRegistrar().register(MINIGAME_SEND);
         // Register the bendinghub chat channel so the proxy can receive backend chat plugin messages
         proxy.getChannelRegistrar().register(BENDINGHUB_CHAT);
-
+        proxy.getChannelRegistrar().register(BENDINGHUB_TAB);
         logger.info("Registered!");
     }
 
@@ -189,6 +190,39 @@ public class BendingHub {
             server.sendPluginMessage(BENDINGHUB_CHAT, event.getData());
         }
 
+    }
+
+    @Subscribe
+    public void onTabPluginMessage(PluginMessageEvent event) {
+        // Ensure the packet belongs to our custom channel
+        if (!event.getIdentifier().equals(BENDINGHUB_TAB)) {
+            return;
+        }
+
+        // Consume the event so Velocity doesn't try to forward it natively or throw channel errors
+        event.setResult(PluginMessageEvent.ForwardResult.handled());
+
+        // Verify the source came from a backend Spigot server connection
+        if (!(event.getSource() instanceof com.velocitypowered.api.proxy.ServerConnection)) {
+            return;
+        }
+
+        com.velocitypowered.api.proxy.ServerConnection sourceServer = (com.velocitypowered.api.proxy.ServerConnection) event.getSource();
+        String originServerName = sourceServer.getServerInfo().getName();
+
+        byte[] rawPayload = event.getData();
+
+        // Relay the exact payload to every sub-server EXCEPT the one that sent it
+        for (RegisteredServer subServer : proxy.getAllServers()) {
+            String targetServerName = subServer.getServerInfo().getName();
+
+            // Anti-Loop / Echo Filter: Skip sending it back to the origin server
+            if (targetServerName.equalsIgnoreCase(originServerName)) {
+                continue;
+            }
+
+            subServer.sendPluginMessage(BENDINGHUB_TAB, rawPayload);
+        }
     }
 
     private void dm(CommandSource from, Player player, String msg) {

@@ -24,14 +24,14 @@ public class ChatListener implements Listener {
         ChatChannel channel = Bendinghub.chatManager.getChannelManager().getPlayerChannel(player.getUniqueId());
 
         if (channel == null) {
-            player.sendMessage(mm.deserialize("<red>Channel not found. Moved to global"));
-            Bendinghub.chatManager.getChannelManager().setPlayerChannel(player.getUniqueId(), "global");
+            player.sendMessage(mm.deserialize("<red>Channel not found. Moved to " + ChannelManager.DEFAULT_CHANNEL_ID));
+            Bendinghub.chatManager.getChannelManager().setPlayerChannel(player.getUniqueId(), ChannelManager.DEFAULT_CHANNEL_ID);
             channel = Bendinghub.chatManager.getChannelManager().getPlayerChannel(player.getUniqueId());
         }
 
         if (channel != null && channel.getPermission() != null && !player.hasPermission(channel.getPermission())){
-            player.sendMessage(mm.deserialize("<red>You no longer have access to this channel. Moved to global"));
-            Bendinghub.chatManager.getChannelManager().setPlayerChannel(player.getUniqueId(), "global");
+            player.sendMessage(mm.deserialize("<red>You no longer have access to this channel. Moved to " + ChannelManager.DEFAULT_CHANNEL_ID));
+            Bendinghub.chatManager.getChannelManager().setPlayerChannel(player.getUniqueId(), ChannelManager.DEFAULT_CHANNEL_ID);
             channel = Bendinghub.chatManager.getChannelManager().getPlayerChannel(player.getUniqueId());
         }
 

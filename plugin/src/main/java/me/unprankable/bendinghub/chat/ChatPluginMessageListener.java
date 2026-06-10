@@ -10,6 +10,9 @@ import org.jetbrains.annotations.NotNull;
 public class ChatPluginMessageListener implements PluginMessageListener {
     @Override
     public void onPluginMessageReceived(@NotNull String channel, @NotNull Player player, byte @NotNull [] message) {
+        if (!channel.equals(MessageDataObject.BENDINGHUB_CHAT)) {
+            return;
+        }
         if (Bendinghub.chatManager == null || Bendinghub.configManager == null || !Bendinghub.configManager.isChatEnabled()) {
             return;
         }

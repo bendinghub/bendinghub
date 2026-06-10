@@ -57,5 +57,37 @@ chat:
       recieve: true
   chatcolor:
     blacklist:
-      - "&k"
-      - "<obf>"
+      - ''&k'
+      - '<obf>'
+tab:
+  placeholders:
+    "<tabprefix>": "%luckperms_prefix%"
+#    "<tagprefix>": "%luckperms_prefix%"
+    "<customtabname>": "%player_displayname%"
+#    "<customtagname>": "%player_displayname%"
+    "<tabsuffix>": "%luckperms_suffix%"
+#    "<tagsrefix>": "%luckperms_suffix%"
+  header:
+    - 'Welcome to the server %player_displayname%'
+    - 'Online players: %server_online%'
+  footer:
+    - 'Visit our webpage %bendinghub_animation:web%'
+  tabnameformat: "<tabprefix> <customtabname> <tabsuffix>"
+#  tagnameformat: "<tagprefix> <customtagname> <tagsuffix>"
+  updateIntervalTicks: 100
+  weights:
+    founder: 60
+    co-owner: 55
+    manager: 50
+    admin: 45
+    mod: 40
+    helper: 35
+    trainee: 30
+    builder: 25
+    creator: 20
+    supporter: 15
+    vip: 10
+    default: 5
+
+
+

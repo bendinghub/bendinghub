@@ -4,10 +4,16 @@ import me.unprankable.bendinghub.chat.ChatManager;
 import me.unprankable.bendinghub.hooks.DiscordSRVChatListenerHook;
 import me.unprankable.bendinghub.hooks.TownyChatHook;
 import me.unprankable.bendinghub.placeholderapi.BendinghubExpansion;
+import me.unprankable.bendinghub.tab.TabListener;
+import me.unprankable.bendinghub.tab.TabManager;
 import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 import github.scarsz.discordsrv.DiscordSRV;
+import org.bukkit.scoreboard.Scoreboard;
+import org.bukkit.scoreboard.Team;
 
+import javax.swing.event.TableModelListener;
 import java.sql.SQLException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -17,6 +23,7 @@ public final class Bendinghub extends JavaPlugin {
     public static Logger log;
     public static ConfigManager configManager;
     public static ChatManager chatManager;
+    public static TabManager tabManager;
     public static commandExecutor commandExecutor;
     public static boolean luckpermsEnabled;
     public static StorageManager storageManager;
@@ -24,6 +31,7 @@ public final class Bendinghub extends JavaPlugin {
     @Override
     public void onEnable() {
         plugin = this;
+        getServer().getPluginManager().registerEvents(new TabListener(), this);
         Bendinghub.log = this.getLogger();
         configManager = new ConfigManager();
         TownyChatHook townyChatHook = new TownyChatHook();
@@ -45,6 +53,12 @@ public final class Bendinghub extends JavaPlugin {
         } else {
             Bendinghub.log.info("Chat feature is disabled in config; skipping ChatManager initialization.");
         }
+
+        tabManager = new TabManager();
+        TabManager.task = Bukkit.getScheduler().runTaskTimerAsynchronously(this, () -> {
+            tabManager.updateAllPlayers();
+        },0L , configManager.getConfig().getInt("tab.updateIntervalTicks"));
+
         if (Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")) {
             new BendinghubExpansion().register();
             Bendinghub.log.info("Registered PlaceholderAPI expansion: Bendinghub");
@@ -75,6 +89,15 @@ public final class Bendinghub extends JavaPlugin {
                 Bendinghub.log.log(Level.WARNING, "Failed to save player chat colors on shutdown", e);
             }
         }
+
+        Scoreboard scoreboard = getServer().getScoreboardManager().getMainScoreboard();
+        for (Player player : Bukkit.getOnlinePlayers()) {
+            Team team = scoreboard.getTeam(player.getName());
+            if (team != null) {
+                team.unregister();
+            }
+        }
+        TabManager.task.cancel();
 
         // Close persistent storage
         if (storageManager != null) storageManager.close();
