@@ -30,7 +30,7 @@ public class TabManager {
     private final ProxyServer proxy = BendingHub.plugin.proxy;
     private final MiniMessage mm = MiniMessage.miniMessage();
     private static final AtomicInteger id = new AtomicInteger(0);
-
+    public static final int delay = 2000;
     public TabManager() {
     }
 
@@ -89,16 +89,25 @@ public class TabManager {
                             .build();
                     viewer.getTabList().addEntry(entry);
                 }
-
-                updateTabForPlayer(target);
             }
+        }
+    }
+
+    public void refreshAllTabNames() {
+        for (Player target : proxy.getAllPlayers()) {
+            // Stagger the updates to prevent race conditions
+            proxy.getScheduler().buildTask(BendingHub.plugin, () -> {
+                updateTabForPlayer(target);
+            }).delay(delay / 4, TimeUnit.MILLISECONDS).schedule();
         }
     }
 
     @Subscribe
     public void onPostLogin(PostLoginEvent event) {
         // When someone joins, refresh everyone's lists
-        updateAllTabLists();
+        proxy.getScheduler().buildTask(BendingHub.plugin, () -> {
+            updateAllTabLists();
+        }).delay(delay, TimeUnit.MILLISECONDS).schedule();
     }
 
     // 1. Send the request when a player connects to a server
@@ -108,7 +117,10 @@ public class TabManager {
         updateTabForPlayer(event.getPlayer());
 
         // Ensure the tab list remains global after the move
-        updateAllTabLists();
+        proxy.getScheduler().buildTask(BendingHub.plugin, () -> {
+            updateAllTabLists();
+        }).delay(delay / 8, TimeUnit.MILLISECONDS).schedule();
+        refreshAllTabNames();
     }
 
     @Subscribe
@@ -131,7 +143,7 @@ public class TabManager {
             requestPlaceholders(player, "header", getHeader());
             requestPlaceholders(player, "footer", getFooter());
             requestPlaceholders(player, "group", "%luckperms_primary_group_name%");
-        }).delay(2000, TimeUnit.MILLISECONDS).schedule();
+        }).delay(delay, TimeUnit.MILLISECONDS).schedule();
     }
 
     public void requestPlaceholders(Player player, String requesting, String placeholderText){
@@ -186,6 +198,10 @@ public class TabManager {
                         player.getTabList().getEntry(playerUUID).ifPresent(entry -> {
                             entry.setDisplayName(tabName);
                         });
+                        // Add this inside onTabPluginMessage, under the "tabnameformat" case
+                        BendingHub.plugin.debug("Updating tab name for: " + player.getUsername());
+                        BendingHub.plugin.debug("Raw response from backend: " + response);
+                        BendingHub.plugin.debug("Formatted component: " + tabName.toString());
                         break;
                     case "header":
                         String headerText = convertLegacyToMiniMessage(response);
