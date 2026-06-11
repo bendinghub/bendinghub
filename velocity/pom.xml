@@ -60,11 +60,6 @@
 
     <dependencies>
         <dependency>
-            <groupId>me.unprankable</groupId>
-            <artifactId>bendinghub-plugin</artifactId>
-            <version>1.0.1</version>
-        </dependency>
-        <dependency>
             <groupId>com.velocitypowered</groupId>
             <artifactId>velocity-api</artifactId>
             <version>3.4.0-SNAPSHOT</version>

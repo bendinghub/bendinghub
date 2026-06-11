@@ -4,8 +4,7 @@ import me.unprankable.bendinghub.chat.ChatManager;
 import me.unprankable.bendinghub.hooks.DiscordSRVChatListenerHook;
 import me.unprankable.bendinghub.hooks.TownyChatHook;
 import me.unprankable.bendinghub.placeholderapi.BendinghubExpansion;
-import me.unprankable.bendinghub.tab.TabListener;
-import me.unprankable.bendinghub.tab.TabManager;
+import me.unprankable.bendinghub.tab.TabPluginMessageListener;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -24,7 +23,6 @@ public final class Bendinghub extends JavaPlugin {
     public static Logger log;
     public static ConfigManager configManager;
     public static ChatManager chatManager;
-    public static TabManager tabManager;
     public static commandExecutor commandExecutor;
     public static boolean luckpermsEnabled;
     public static StorageManager storageManager;
@@ -32,7 +30,6 @@ public final class Bendinghub extends JavaPlugin {
     @Override
     public void onEnable() {
         plugin = this;
-        getServer().getPluginManager().registerEvents(new TabListener(), this);
         Bendinghub.log = this.getLogger();
         configManager = new ConfigManager();
         TownyChatHook townyChatHook = new TownyChatHook();
@@ -55,10 +52,8 @@ public final class Bendinghub extends JavaPlugin {
             Bendinghub.log.info("Chat feature is disabled in config; skipping ChatManager initialization.");
         }
 
-        tabManager = new TabManager();
-        TabManager.task = Bukkit.getScheduler().runTaskTimerAsynchronously(this, () -> {
-            tabManager.updateAllPlayers();
-        },0L , configManager.getConfig().getInt("tab.updateIntervalTicks"));
+        this.getServer().getMessenger().registerOutgoingPluginChannel(this, "bendinghub:tab");
+        this.getServer().getMessenger().registerIncomingPluginChannel(this, "bendinghub:tab", new TabPluginMessageListener());
 
         if (Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")) {
             new BendinghubExpansion().register();
@@ -99,7 +94,6 @@ public final class Bendinghub extends JavaPlugin {
                 team.unregister();
             }
         }
-        TabManager.task.cancel();
 
         // Close persistent storage
         if (storageManager != null) storageManager.close();

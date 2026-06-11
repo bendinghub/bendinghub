@@ -22,7 +22,6 @@ import com.velocitypowered.api.plugin.annotation.DataDirectory;
 import com.velocitypowered.api.proxy.Player;
 import com.velocitypowered.api.proxy.ProxyServer;
 import com.velocitypowered.api.proxy.ServerConnection;
-import me.unprankable.bendinghub.chat.ChatManager;
 import com.velocitypowered.api.proxy.messages.MinecraftChannelIdentifier;
 import com.velocitypowered.api.proxy.server.RegisteredServer;
 import com.velocitypowered.api.scheduler.ScheduledTask;
@@ -42,16 +41,18 @@ import java.util.concurrent.TimeUnit;
 
 @Plugin(id = "bendinghub", name = "BendingHub", version = "1.0.0", description = "bendinghub velocity", authors = {"houdert6"})
 public class BendingHub {
-    private final ProxyServer proxy;
+    public final ProxyServer proxy;
+    public static BendingHub plugin;
     private static final MinecraftChannelIdentifier MINIGAME_INFO = MinecraftChannelIdentifier.create("bendinghub", "minigameinfo");
     private static final MinecraftChannelIdentifier MINIGAME_SEND = MinecraftChannelIdentifier.create("bendinghub", "minigamesend");
     private static final MinecraftChannelIdentifier BENDINGHUB_CHAT = MinecraftChannelIdentifier.create("bendinghub", "chat");
-    private static final MinecraftChannelIdentifier BENDINGHUB_TAB = MinecraftChannelIdentifier.create("bendinghub", "tab");
+    public static final MinecraftChannelIdentifier BENDINGHUB_TAB = MinecraftChannelIdentifier.create("bendinghub", "tab");
     private final Map<Player, byte[]> minigameInfoMap = new HashMap<>();
 
     @Inject
     public BendingHub(ProxyServer proxy) {
         this.proxy = proxy;
+        plugin = this;
     }
 
     @Inject
@@ -59,7 +60,43 @@ public class BendingHub {
     private Path dataFolder;
 
     @Inject
-    private Logger logger;
+    public Logger logger;
+
+    public void debug(String message){
+        if(ConfigManager.toml().getBoolean("debug"))logger.info("[DEBUG] " + message);
+    }
+
+    public static String convertLegacyToMiniMessage(String text) {
+        if (text == null) return "";
+        //Convert hex codes in the format &#RRGGBB or &x&R&R&G&B&B to <#RRGGBB>
+        text = text.replaceAll("(?i)(&|§)x(&|§)([A-Fa-f0-9])(&|§)([A-Fa-f0-9])(&|§)([A-Fa-f0-9])(&|§)([A-Fa-f0-9])(&|§)([A-Fa-f0-9])(&|§)([A-Fa-f0-9])", "<#$3$5$7$9$11$13>");
+        text = text.replaceAll("(?i)(&|§)(#([A-Fa-f0-9]{6}))", "<$2>");
+        // 2. Standard Color Codes
+        text = text.replaceAll("(?i)(&|§)0", "<black>");
+        text = text.replaceAll("(?i)(&|§)1", "<dark_blue>");
+        text = text.replaceAll("(?i)(&|§)2", "<dark_green>");
+        text = text.replaceAll("(?i)(&|§)3", "<dark_aqua>");
+        text = text.replaceAll("(?i)(&|§)4", "<dark_red>");
+        text = text.replaceAll("(?i)(&|§)5", "<dark_purple>");
+        text = text.replaceAll("(?i)(&|§)6", "<gold>");
+        text = text.replaceAll("(?i)(&|§)7", "<gray>");
+        text = text.replaceAll("(?i)(&|§)8", "<dark_gray>");
+        text = text.replaceAll("(?i)(&|§)9", "<blue>");
+        text = text.replaceAll("(?i)(&|§)a", "<green>");
+        text = text.replaceAll("(?i)(&|§)b", "<aqua>");
+        text = text.replaceAll("(?i)(&|§)c", "<red>");
+        text = text.replaceAll("(?i)(&|§)d", "<light_purple>");
+        text = text.replaceAll("(?i)(&|§)e", "<yellow>");
+        text = text.replaceAll("(?i)(&|§)f", "<white>");
+        // 3. Formatting & Styles
+        text = text.replaceAll("(?i)(&|§)l", "<bold>");
+        text = text.replaceAll("(?i)(&|§)m", "<strikethrough>");
+        text = text.replaceAll("(?i)(&|§)n", "<underline>");
+        text = text.replaceAll("(?i)(&|§)o", "<italic>");
+        text = text.replaceAll("(?i)(&|§)k", "<obf>");
+        text = text.replaceAll("(?i)(&|§)r", "<reset>");
+        return text;
+    }
 
     @Subscribe
     public void onProxyInitialization(ProxyInitializeEvent event) {
@@ -126,6 +163,9 @@ public class BendingHub {
         // Register the bendinghub chat channel so the proxy can receive backend chat plugin messages
         proxy.getChannelRegistrar().register(BENDINGHUB_CHAT);
         proxy.getChannelRegistrar().register(BENDINGHUB_TAB);
+
+        proxy.getEventManager().register(this, new TabManager());
+
         logger.info("Registered!");
     }
 
@@ -192,39 +232,6 @@ public class BendingHub {
 
     }
 
-    @Subscribe
-    public void onTabPluginMessage(PluginMessageEvent event) {
-        // Ensure the packet belongs to our custom channel
-        if (!event.getIdentifier().equals(BENDINGHUB_TAB)) {
-            return;
-        }
-
-        // Consume the event so Velocity doesn't try to forward it natively or throw channel errors
-        event.setResult(PluginMessageEvent.ForwardResult.handled());
-
-        // Verify the source came from a backend Spigot server connection
-        if (!(event.getSource() instanceof com.velocitypowered.api.proxy.ServerConnection)) {
-            return;
-        }
-
-        com.velocitypowered.api.proxy.ServerConnection sourceServer = (com.velocitypowered.api.proxy.ServerConnection) event.getSource();
-        String originServerName = sourceServer.getServerInfo().getName();
-
-        byte[] rawPayload = event.getData();
-
-        // Relay the exact payload to every sub-server EXCEPT the one that sent it
-        for (RegisteredServer subServer : proxy.getAllServers()) {
-            String targetServerName = subServer.getServerInfo().getName();
-
-            // Anti-Loop / Echo Filter: Skip sending it back to the origin server
-            if (targetServerName.equalsIgnoreCase(originServerName)) {
-                continue;
-            }
-
-            subServer.sendPluginMessage(BENDINGHUB_TAB, rawPayload);
-        }
-    }
-
     private void dm(CommandSource from, Player player, String msg) {
         Toml msgsConfig = ConfigManager.toml().getTable("private-messages");
         boolean doLegacy = msgsConfig.getBoolean("legacy-format", true);
@@ -234,7 +241,7 @@ public class BendingHub {
         String receivingFormat = msgsConfig.getString("message-format-receiving").replace("%player%", from instanceof Player p ? p.getUsername() : "Console (proxy)");
         Component receivingMsg;
         if (doLegacy && doMiniMsg) {
-            receivingMsg = MiniMessage.miniMessage().deserialize(receivingFormat.replace("%message%", ChatManager.convertLegacyToMiniMessage(msg)));
+            receivingMsg = MiniMessage.miniMessage().deserialize(receivingFormat.replace("%message%", convertLegacyToMiniMessage(msg)));
         } else if (doLegacy) {
             receivingMsg = MiniMessage.miniMessage().deserialize(receivingFormat.replace("%message%", "<bhpm-legacymsg>"), Placeholder.component("bhpm-legacymsg", LegacyComponentSerializer.legacyAmpersand().deserialize(msg)));
         } else if (doMiniMsg) {
@@ -248,7 +255,7 @@ public class BendingHub {
         String sendingFormat = msgsConfig.getString("message-format-sending").replace("%player%", player.getUsername());
         Component sendingMsg;
         if (doLegacy && doMiniMsg) {
-            sendingMsg = MiniMessage.miniMessage().deserialize(sendingFormat.replace("%message%", ChatManager.convertLegacyToMiniMessage(msg)));
+            sendingMsg = MiniMessage.miniMessage().deserialize(sendingFormat.replace("%message%", convertLegacyToMiniMessage(msg)));
         } else if (doLegacy) {
             sendingMsg = MiniMessage.miniMessage().deserialize(sendingFormat.replace("%message%", "<bhpm-legacymsg>"), Placeholder.component("bhpm-legacymsg", LegacyComponentSerializer.legacyAmpersand().deserialize(msg)));
         } else if (doMiniMsg) {
